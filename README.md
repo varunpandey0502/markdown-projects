@@ -11,7 +11,7 @@ Designed for AI agents and automation. JSON-first output, non-interactive, fully
 Install the `markdown-projects` skill to give an agent full context on how to install and use the tool:
 
 ```bash
-npx skills add varunpandey0502/markdown-projects/
+npx skills add varunpandey0502/markdown-projects
 ```
 
 Once the skill is installed, the agent can install the CLI, initialize projects, and manage issues and milestones autonomously.
