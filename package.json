@@ -1,0 +1,24 @@
+{
+  "name": "markdown-projects",
+  "version": "1.0.0",
+  "description": "File-based project management CLI using markdown",
+  "type": "module",
+  "bin": {
+    "mdp": "./src/cli.ts"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "yaml": "^2.8.2"
+  }
+}
