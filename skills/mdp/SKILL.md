@@ -184,11 +184,57 @@ mdp issue delete -p <path> --id <id> [--dry-run]
 
 Cleans up blockedBy, relatedTo, and parent references in other issues.
 
-#### Comment
+#### Log
+
+Manage log entries on an issue.
 
 ```
-mdp issue comment -p <path> --id <id> -b "message" [--author <name>] [--dry-run]
+mdp issue log add -p <path> --id <id> -b "message" [--author <name>] [--dry-run]
+mdp issue log list -p <path> --id <id>
+mdp issue log get -p <path> --id <id> --index <n>
+mdp issue log update -p <path> --id <id> --index <n> [--author <a>] [-b <body>] [--dry-run]
+mdp issue log delete -p <path> --id <id> --index <n> [--dry-run]
 ```
+
+#### Batch create
+
+Create multiple issues at once by piping a JSON array via stdin. Processes items sequentially; continues on error and reports per-item success/failure.
+
+```
+echo '<json-array>' | mdp issue batch-create -p <path> [--dry-run]
+```
+
+Input: JSON array of issue objects. Required field: `title`. All other fields match `issue create` options (`type`, `status`, `priority`, `labels`, `assignee`, `milestone`, `estimate`, `spent`, `dueDate`, `blockedBy`, `parent`, `relatedTo`, `checklist`, `description`, `content`, `template`). Array fields (`labels`, `blockedBy`, etc.) accept `string[]`.
+
+Output:
+```json
+{
+  "ok": true,
+  "data": {
+    "total": 3, "succeeded": 2, "failed": 1,
+    "results": [
+      { "ok": true, "data": { "id": "ISS-004", "title": "...", "filePath": "..." } },
+      { "ok": false, "error": { "code": "INVALID_STATUS", "message": "...", "index": 2 } }
+    ]
+  }
+}
+```
+
+Exits with code 1 if any item failed.
+
+#### Batch update
+
+Update multiple issues at once by piping a JSON array via stdin. Processes items sequentially; continues on error and reports per-item success/failure. In-memory state is refreshed after each successful update for accurate cycle detection.
+
+```
+echo '<json-array>' | mdp issue batch-update -p <path> [--dry-run]
+```
+
+Input: JSON array of update objects. Required field: `id`. All other fields match `issue update` options (`title`, `type`, `status`, `priority`, `labels`, `addLabels`, `removeLabels`, `assignee`, `milestone`, `estimate`, `spent`, `dueDate`, `blockedBy`, `addBlockedBy`, `removeBlockedBy`, `parent`, `relatedTo`, `addRelatedTo`, `removeRelatedTo`, `addChecklist`, `removeChecklist`, `check`, `uncheck`, `content`). Array fields accept `string[]`.
+
+Output: Same envelope format as batch-create, with `changes` and `filePath` per item.
+
+Exits with code 1 if any item failed.
 
 ### Milestones
 
@@ -272,18 +318,25 @@ mdp milestone progress -p <path> --id <id>
 
 Returns completion percentage, issue counts by status, and list of assigned issues.
 
-#### Comment
+#### Log
+
+Manage log entries on a milestone.
 
 ```
-mdp milestone comment -p <path> --id <id> -b "message" [--author <name>] [--dry-run]
+mdp milestone log add -p <path> --id <id> -b "message" [--author <name>] [--dry-run]
+mdp milestone log list -p <path> --id <id>
+mdp milestone log get -p <path> --id <id> --index <n>
+mdp milestone log update -p <path> --id <id> --index <n> [--author <a>] [-b <body>] [--dry-run]
+mdp milestone log delete -p <path> --id <id> --index <n> [--dry-run]
 ```
 
 ## Workflow recommendations
 
 1. Start with `mdp project create -p . --preset software` to set up a project
 2. Create issues with `mdp issue create` — use `--type` and `--labels` for organization
-3. Move issues through statuses with `mdp issue update --id ISS-1 -s "In Progress"`
-4. Group work into milestones, then track with `mdp milestone progress`
-5. Use `mdp issue list` with filters to find relevant issues
+3. For bulk operations, use `mdp issue batch-create` and `mdp issue batch-update` with JSON arrays piped via stdin
+4. Move issues through statuses with `mdp issue update --id ISS-1 -s "In Progress"`
+5. Group work into milestones, then track with `mdp milestone progress`
+6. Use `mdp issue list` with filters to find relevant issues
 
 See [WORKFLOWS.md](references/WORKFLOWS.md) for detailed workflow patterns.

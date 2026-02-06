@@ -37,7 +37,7 @@ mdp milestone create -p . -t "v1.0 Release" --due-date 2025-06-01
 # Create and track issues
 mdp issue create -p . -t "Add authentication" --type feature --milestone M-001
 mdp issue update -p . --id ISS-001 --status "In Progress"
-mdp issue comment -p . --id ISS-001 --body "Starting implementation"
+mdp issue log add -p . --id ISS-001 -b "Starting implementation"
 
 # Check progress
 mdp milestone progress -p . --id M-001
@@ -86,7 +86,11 @@ mdp milestone progress -p . --id M-001
 | `mdp issue get` | Get a single issue by ID |
 | `mdp issue update` | Update issue fields |
 | `mdp issue delete` | Delete an issue and clean up references |
-| `mdp issue comment` | Add a log entry to an issue |
+| `mdp issue log add` | Add a log entry to an issue |
+| `mdp issue log list` | List log entries for an issue |
+| `mdp issue log get` | Get a specific log entry by index |
+| `mdp issue log update` | Update a log entry by index |
+| `mdp issue log delete` | Delete a log entry by index |
 
 ### Milestones
 
@@ -98,7 +102,11 @@ mdp milestone progress -p . --id M-001
 | `mdp milestone update` | Update milestone fields |
 | `mdp milestone delete` | Delete a milestone and clean up references |
 | `mdp milestone progress` | Show detailed progress report |
-| `mdp milestone comment` | Add a log entry to a milestone |
+| `mdp milestone log add` | Add a log entry to a milestone |
+| `mdp milestone log list` | List log entries for a milestone |
+| `mdp milestone log get` | Get a specific log entry by index |
+| `mdp milestone log update` | Update a log entry by index |
+| `mdp milestone log delete` | Delete a log entry by index |
 
 ### Global Flags
 

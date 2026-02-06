@@ -20,14 +20,17 @@ import { registerIssueListCommand } from "./commands/issue/list.ts";
 import { registerIssueGetCommand } from "./commands/issue/get.ts";
 import { registerIssueUpdateCommand } from "./commands/issue/update.ts";
 import { registerIssueDeleteCommand } from "./commands/issue/delete.ts";
-import { registerIssueCommentCommand } from "./commands/issue/comment.ts";
+import { registerIssueLogCommand } from "./commands/issue/log.ts";
+import { registerIssueBatchCreateCommand } from "./commands/issue/batch-create.ts";
+import { registerIssueBatchUpdateCommand } from "./commands/issue/batch-update.ts";
 import { registerMilestoneCreateCommand } from "./commands/milestone/create.ts";
 import { registerMilestoneListCommand } from "./commands/milestone/list.ts";
 import { registerMilestoneGetCommand } from "./commands/milestone/get.ts";
 import { registerMilestoneUpdateCommand } from "./commands/milestone/update.ts";
 import { registerMilestoneDeleteCommand } from "./commands/milestone/delete.ts";
 import { registerMilestoneProgressCommand } from "./commands/milestone/progress.ts";
-import { registerMilestoneCommentCommand } from "./commands/milestone/comment.ts";
+import { registerMilestoneLogCommand } from "./commands/milestone/log.ts";
+import { registerSearchCommand } from "./commands/search.ts";
 
 const program = new Command();
 
@@ -76,7 +79,9 @@ registerIssueListCommand(issueCmd);
 registerIssueGetCommand(issueCmd);
 registerIssueUpdateCommand(issueCmd);
 registerIssueDeleteCommand(issueCmd);
-registerIssueCommentCommand(issueCmd);
+registerIssueLogCommand(issueCmd);
+registerIssueBatchCreateCommand(issueCmd);
+registerIssueBatchUpdateCommand(issueCmd);
 
 // ── Milestone subcommand group ──
 const milestoneCmd = program
@@ -89,7 +94,10 @@ registerMilestoneGetCommand(milestoneCmd);
 registerMilestoneUpdateCommand(milestoneCmd);
 registerMilestoneDeleteCommand(milestoneCmd);
 registerMilestoneProgressCommand(milestoneCmd);
-registerMilestoneCommentCommand(milestoneCmd);
+registerMilestoneLogCommand(milestoneCmd);
+
+// ── Top-level commands ──
+registerSearchCommand(program);
 
 // Export for use in later steps
 export { issueCmd, milestoneCmd };

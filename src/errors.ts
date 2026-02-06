@@ -123,10 +123,26 @@ export function parseError(path: string, reason: string): MdpError {
   );
 }
 
+export function invalidInput(message: string, details: Record<string, unknown> = {}): MdpError {
+  return new MdpError(
+    "INVALID_INPUT",
+    message,
+    details,
+  );
+}
+
 export function configError(reason: string): MdpError {
   return new MdpError(
     "CONFIG_ERROR",
     `Configuration error: ${reason}`,
     { reason },
+  );
+}
+
+export function logEntryNotFound(index: number, entityId: string): MdpError {
+  return new MdpError(
+    "LOG_ENTRY_NOT_FOUND",
+    `Log entry at index ${index} not found for ${entityId}`,
+    { index, entityId },
   );
 }
