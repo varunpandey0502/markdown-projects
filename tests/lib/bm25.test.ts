@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { search, tokenize, generateSnippet, FIELD_WEIGHTS } from "./bm25.ts";
-import type { SearchDocument, SearchField } from "./bm25.ts";
+import { search, tokenize, generateSnippet, FIELD_WEIGHTS } from "../../src/lib/bm25.ts";
+import type { SearchDocument, SearchField } from "../../src/lib/bm25.ts";
 
 // ── Helper ──
 
