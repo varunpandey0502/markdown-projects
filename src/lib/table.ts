@@ -69,3 +69,12 @@ export const STATS_SECTION_COLUMNS: TableColumn[] = [
   { key: "name", header: "NAME", width: 20 },
   { key: "count", header: "COUNT", width: 8, align: "right" },
 ];
+
+export const SEARCH_TABLE_COLUMNS: TableColumn[] = [
+  { key: "entity", header: "TYPE", width: 10 },
+  { key: "id", header: "ID", width: 8 },
+  { key: "title", header: "TITLE", width: 35 },
+  { key: "status", header: "STATUS", width: 12 },
+  { key: "score", header: "SCORE", width: 6, align: "right" },
+  { key: "matchedFields", header: "MATCHED IN", width: 20 },
+];
