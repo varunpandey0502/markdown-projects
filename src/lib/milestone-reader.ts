@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { PROJECT_DIR } from "../constants.ts";
-import { readConfig, getMilestoneStatusDisplayName } from "./config.ts";
-import { listSubDirs, listDir, readText } from "./fs-utils.ts";
+import { readConfig } from "./config.ts";
+import { listDir, readText, isDirectory } from "./fs-utils.ts";
 import { parseMarkdown, getString, getStringArray, getChecklist, getLogEntries } from "./frontmatter.ts";
 import type { MilestoneFrontmatter, ProjectConfig } from "../types.ts";
 
@@ -16,42 +16,39 @@ export async function readAllMilestones(projectPath: string, config?: ProjectCon
   }
 
   const milestonesBase = join(projectPath, PROJECT_DIR, "milestones");
-  const statusDirs = await listSubDirs(milestonesBase);
+  const folders = await listDir(milestonesBase);
   const milestones: RawMilestone[] = [];
 
-  for (const statusDir of statusDirs) {
-    const statusPath = join(milestonesBase, statusDir);
-    const folders = await listDir(statusPath);
+  for (const folder of folders) {
+    const folderPath = join(milestonesBase, folder);
+    if (!(await isDirectory(folderPath))) continue;
 
-    for (const folder of folders) {
-      const folderPath = join(statusPath, folder);
-      const mdFile = join(folderPath, `${folder}.md`);
+    const mdFile = join(folderPath, `${folder}.md`);
 
-      try {
-        const raw = await readText(mdFile);
-        const parsed = parseMarkdown(raw);
-        const fm = parsed.frontmatter;
+    try {
+      const raw = await readText(mdFile);
+      const parsed = parseMarkdown(raw);
+      const fm = parsed.frontmatter;
 
-        const milestone: RawMilestone = {
-          id: getString(fm, "id") ?? folder.split("-").slice(0, 2).join("-"),
-          title: getString(fm, "title") ?? "",
-          status: getString(fm, "status") ?? getMilestoneStatusDisplayName(config!, statusDir) ?? statusDir,
-          priority: getString(fm, "priority") ?? "None",
-          labels: getStringArray(fm, "labels"),
-          startDate: getString(fm, "startDate"),
-          dueDate: getString(fm, "dueDate"),
-          checklist: getChecklist(fm, "checklist"),
-          log: getLogEntries(fm, "log"),
-          createdAt: getString(fm, "createdAt") ?? new Date().toISOString(),
-          updatedAt: getString(fm, "updatedAt") ?? new Date().toISOString(),
-          filePath: `${PROJECT_DIR}/milestones/${statusDir}/${folder}/${folder}.md`,
-          content: parsed.content,
-        };
+      const milestone: RawMilestone = {
+        id: getString(fm, "id") ?? folder.split("-").slice(0, 2).join("-"),
+        title: getString(fm, "title") ?? "",
+        status: getString(fm, "status") ?? "Planning",
+        priority: getString(fm, "priority") ?? "None",
+        labels: getStringArray(fm, "labels"),
+        startDate: getString(fm, "startDate"),
+        dueDate: getString(fm, "dueDate"),
+        checklist: getChecklist(fm, "checklist"),
+        log: getLogEntries(fm, "log"),
+        createdAt: getString(fm, "createdAt") ?? new Date().toISOString(),
+        updatedAt: getString(fm, "updatedAt") ?? new Date().toISOString(),
+        filePath: `${PROJECT_DIR}/milestones/${folder}/${folder}.md`,
+        content: parsed.content,
+      };
 
-        milestones.push(milestone);
-      } catch {
-        // Skip files that can't be parsed
-      }
+      milestones.push(milestone);
+    } catch {
+      // Skip files that can't be parsed
     }
   }
 

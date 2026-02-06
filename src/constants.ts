@@ -9,17 +9,17 @@ export const VERSION = "1.0.0";
 // ── Shared across all presets ──
 
 const SHARED_ISSUE_STATUSES: StatusConfig[] = [
-  { name: "Backlog", folderName: "backlog" },
-  { name: "To Do", folderName: "to_do" },
-  { name: "In Progress", folderName: "in_progress" },
-  { name: "Done", folderName: "done" },
+  { name: "Backlog" },
+  { name: "To Do" },
+  { name: "In Progress" },
+  { name: "Done" },
 ];
 
 const SHARED_MILESTONE_STATUSES: StatusConfig[] = [
-  { name: "Planning", folderName: "planning" },
-  { name: "Active", folderName: "active" },
-  { name: "On Hold", folderName: "on_hold" },
-  { name: "Completed", folderName: "completed" },
+  { name: "Planning" },
+  { name: "Active" },
+  { name: "On Hold" },
+  { name: "Completed" },
 ];
 
 const SHARED_PRIORITIES: PriorityConfig[] = [

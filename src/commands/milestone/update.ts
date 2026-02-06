@@ -1,12 +1,14 @@
+import { join, dirname, basename } from "node:path";
 import type { Command } from "commander";
+import { PROJECT_DIR } from "../../constants.ts";
 import { MdpError, milestoneNotFound } from "../../errors.ts";
-import { readConfig, getMilestoneStatusFolderName } from "../../lib/config.ts";
+import { readConfig } from "../../lib/config.ts";
 import { resolveProjectPath } from "../../lib/project-finder.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { readAllMilestones, findMilestoneAbsolutePath } from "../../lib/milestone-reader.ts";
 import { buildMarkdown, parseMarkdown } from "../../lib/frontmatter.ts";
-import { readText, writeText } from "../../lib/fs-utils.ts";
-import { moveIssueFolder } from "../../lib/file-mover.ts";
+import { readText, writeText, renameEntry, pathExists } from "../../lib/fs-utils.ts";
+import { slugify } from "../../lib/slug.ts";
 import { validateStatus, validatePriority, validateLabels, validateDate, parseCommaSeparated } from "../../lib/validators.ts";
 import { printSuccess, printError, verboseLog } from "../../output.ts";
 
@@ -171,34 +173,42 @@ export function registerMilestoneUpdateCommand(milestoneCmd: Command): void {
 
         const markdown = buildMarkdown(fm, content);
 
-        // Check if folder move needed
-        const newStatusFolder = options.status !== undefined
-          ? getMilestoneStatusFolderName(config, fm.status as string) ?? null
-          : null;
-        const newTitle = options.title !== undefined ? options.title : null;
+        // Check if folder rename needed (only for title changes)
+        if (options.title !== undefined) {
+          const currentMdPath = join(projectPath, rawMilestone.filePath);
+          const currentFolderPath = dirname(currentMdPath);
+          const currentFolderName = basename(currentFolderPath);
+          const parentDir = dirname(currentFolderPath);
 
-        if (newStatusFolder !== null || newTitle !== null) {
-          const moveResult = await moveIssueFolder(
-            projectPath,
-            rawMilestone.filePath,
-            newStatusFolder,
-            newTitle,
-            rawMilestone.id,
-          );
+          const newSlug = slugify(options.title);
+          const newFolderName = `${rawMilestone.id}-${newSlug}`;
+          const newFolderPath = join(parentDir, newFolderName);
 
-          if (moveResult.moved) {
-            const newAbsPath = findMilestoneAbsolutePath(projectPath, moveResult.newRelativePath);
+          if (currentFolderPath !== newFolderPath) {
+            await renameEntry(currentFolderPath, newFolderPath);
+
+            const oldMdName = `${currentFolderName}.md`;
+            const newMdFileName = `${newFolderName}.md`;
+            if (oldMdName !== newMdFileName) {
+              const oldMdInsideNewFolder = join(newFolderPath, oldMdName);
+              if (await pathExists(oldMdInsideNewFolder)) {
+                await renameEntry(oldMdInsideNewFolder, join(newFolderPath, newMdFileName));
+              }
+            }
+
+            const newRelativePath = `${PROJECT_DIR}/milestones/${newFolderName}/${newFolderName}.md`;
+            const newAbsPath = findMilestoneAbsolutePath(projectPath, newRelativePath);
             await writeText(newAbsPath, markdown);
 
-            verboseLog(`Moved milestone to ${moveResult.newRelativePath}`);
+            verboseLog(`Moved milestone to ${newRelativePath}`);
 
             printSuccess({
               id: rawMilestone.id,
               changes,
               moved: true,
-              oldPath: moveResult.oldPath,
-              newPath: moveResult.newPath,
-              filePath: moveResult.newRelativePath,
+              oldPath: rawMilestone.filePath,
+              newPath: newRelativePath,
+              filePath: newRelativePath,
             }, warnings);
             return;
           }

@@ -46,14 +46,3 @@ export async function listDir(path: string): Promise<string[]> {
     return [];
   }
 }
-
-export async function listSubDirs(path: string): Promise<string[]> {
-  const entries = await listDir(path);
-  const dirs: string[] = [];
-  for (const entry of entries) {
-    if (await isDirectory(join(path, entry))) {
-      dirs.push(entry);
-    }
-  }
-  return dirs;
-}

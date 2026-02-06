@@ -1,12 +1,10 @@
-import { join } from "node:path";
+import { join, dirname, basename } from "node:path";
 import { PROJECT_DIR } from "../constants.ts";
 import { MdpError } from "../errors.ts";
 import { circularDependency } from "../errors.ts";
-import { getStatusFolderName } from "./config.ts";
 import { slugify } from "./slug.ts";
 import { buildMarkdown, parseMarkdown } from "./frontmatter.ts";
-import { ensureDir, writeText, readText, pathExists } from "./fs-utils.ts";
-import { moveIssueFolder } from "./file-mover.ts";
+import { ensureDir, writeText, readText, pathExists, renameEntry } from "./fs-utils.ts";
 import { findIssueAbsolutePath } from "./issue-reader.ts";
 import { detectCycle } from "./cycle-detector.ts";
 import { validateStatus, validatePriority, validateType, validateLabels, validateDate, parseCommaSeparated, validateEstimate, validateSpent } from "./validators.ts";
@@ -65,7 +63,6 @@ export interface PreparedIssueCreate {
   id: string;
   slug: string;
   folderName: string;
-  statusFolder: string;
   frontmatter: Record<string, unknown>;
   content: string;
   filePath: string;
@@ -190,11 +187,6 @@ export async function prepareIssueCreate(
   const slug = slugify(input.title);
   const folderName = `${id}-${slug}`;
 
-  const statusFolder = getStatusFolderName(config, status);
-  if (!statusFolder) {
-    throw new MdpError("INVALID_STATUS", `No folder mapping for status "${status}"`, { status });
-  }
-
   const now = new Date().toISOString();
 
   const frontmatter: Record<string, unknown> = {
@@ -218,13 +210,12 @@ export async function prepareIssueCreate(
     updatedAt: now,
   };
 
-  const filePath = `${PROJECT_DIR}/issues/${statusFolder}/${folderName}/${folderName}.md`;
+  const filePath = `${PROJECT_DIR}/issues/${folderName}/${folderName}.md`;
 
   return {
     id,
     slug,
     folderName,
-    statusFolder,
     frontmatter,
     content,
     filePath,
@@ -236,7 +227,7 @@ export async function writeIssueCreate(
   projectPath: string,
   prepared: PreparedIssueCreate,
 ): Promise<void> {
-  const fullDirPath = join(projectPath, PROJECT_DIR, "issues", prepared.statusFolder, prepared.folderName);
+  const fullDirPath = join(projectPath, PROJECT_DIR, "issues", prepared.folderName);
   await ensureDir(fullDirPath);
 
   const markdown = buildMarkdown(prepared.frontmatter, prepared.content);
@@ -465,35 +456,42 @@ export async function writeIssueUpdate(
   rawIssue: RawIssue,
   fm: Record<string, unknown>,
   content: string,
-  config: ProjectConfig,
-  statusChanged: boolean,
   titleChanged: boolean,
 ): Promise<{ filePath: string; moved: boolean; oldPath?: string; newPath?: string }> {
   const markdown = buildMarkdown(fm, content);
 
-  const newStatusFolder = statusChanged
-    ? getStatusFolderName(config, fm.status as string) ?? null
-    : null;
-  const newTitle = titleChanged ? (fm.title as string) : null;
+  if (titleChanged) {
+    const newTitle = fm.title as string;
+    const currentMdPath = join(projectPath, rawIssue.filePath);
+    const currentFolderPath = dirname(currentMdPath);
+    const currentFolderName = basename(currentFolderPath);
+    const parentDir = dirname(currentFolderPath);
 
-  if (newStatusFolder !== null || newTitle !== null) {
-    const moveResult = await moveIssueFolder(
-      projectPath,
-      rawIssue.filePath,
-      newStatusFolder,
-      newTitle,
-      rawIssue.id,
-    );
+    const newSlug = slugify(newTitle);
+    const newFolderName = `${rawIssue.id}-${newSlug}`;
+    const newFolderPath = join(parentDir, newFolderName);
 
-    if (moveResult.moved) {
-      const newAbsPath = findIssueAbsolutePath(projectPath, moveResult.newRelativePath);
+    if (currentFolderPath !== newFolderPath) {
+      await renameEntry(currentFolderPath, newFolderPath);
+
+      const oldMdName = `${currentFolderName}.md`;
+      const newMdFileName = `${newFolderName}.md`;
+      if (oldMdName !== newMdFileName) {
+        const oldMdInsideNewFolder = join(newFolderPath, oldMdName);
+        if (await pathExists(oldMdInsideNewFolder)) {
+          await renameEntry(oldMdInsideNewFolder, join(newFolderPath, newMdFileName));
+        }
+      }
+
+      const newRelativePath = `${PROJECT_DIR}/issues/${newFolderName}/${newFolderName}.md`;
+      const newAbsPath = findIssueAbsolutePath(projectPath, newRelativePath);
       await writeText(newAbsPath, markdown);
 
       return {
-        filePath: moveResult.newRelativePath,
+        filePath: newRelativePath,
         moved: true,
-        oldPath: moveResult.oldPath,
-        newPath: moveResult.newPath,
+        oldPath: rawIssue.filePath,
+        newPath: newRelativePath,
       };
     }
   }

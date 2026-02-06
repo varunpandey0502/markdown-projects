@@ -2,7 +2,7 @@ import { join } from "node:path";
 import type { Command } from "commander";
 import { PROJECT_DIR } from "../../constants.ts";
 import { MdpError } from "../../errors.ts";
-import { readConfig, getMilestoneStatusFolderName } from "../../lib/config.ts";
+import { readConfig } from "../../lib/config.ts";
 import { resolveProjectPath } from "../../lib/project-finder.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { getNextId } from "../../lib/id.ts";
@@ -80,11 +80,6 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
         const slug = slugify(options.title);
         const folderName = `${id}-${slug}`;
 
-        const statusFolder = getMilestoneStatusFolderName(config, status);
-        if (!statusFolder) {
-          throw new MdpError("INVALID_STATUS", `No folder mapping for status "${status}"`, { status });
-        }
-
         const now = new Date().toISOString();
 
         const frontmatter: Record<string, unknown> = {
@@ -101,7 +96,7 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
           updatedAt: now,
         };
 
-        const filePath = `${PROJECT_DIR}/milestones/${statusFolder}/${folderName}/${folderName}.md`;
+        const filePath = `${PROJECT_DIR}/milestones/${folderName}/${folderName}.md`;
 
         if (options.dryRun) {
           printSuccess({
@@ -114,7 +109,7 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
         }
 
         // Write to disk
-        const fullDirPath = join(projectPath, PROJECT_DIR, "milestones", statusFolder, folderName);
+        const fullDirPath = join(projectPath, PROJECT_DIR, "milestones", folderName);
         await ensureDir(fullDirPath);
 
         const markdown = buildMarkdown(frontmatter, content);

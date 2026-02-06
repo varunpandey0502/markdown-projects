@@ -111,8 +111,6 @@ export function registerIssueUpdateCommand(issueCmd: Command): void {
           rawIssue,
           result.frontmatter,
           result.content,
-          config,
-          result.statusChanged,
           result.titleChanged,
         );
 

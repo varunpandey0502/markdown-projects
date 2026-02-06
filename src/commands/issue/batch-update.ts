@@ -124,8 +124,6 @@ export function registerIssueBatchUpdateCommand(issueCmd: Command): void {
                 rawIssue,
                 result.frontmatter,
                 result.content,
-                config,
-                result.statusChanged,
                 result.titleChanged,
               );
               filePath = writeResult.filePath;

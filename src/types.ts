@@ -86,7 +86,6 @@ export interface Milestone extends MilestoneFrontmatter, MilestoneComputedFields
 
 export interface StatusConfig {
   name: string;
-  folderName: string;
 }
 
 export interface PriorityConfig {

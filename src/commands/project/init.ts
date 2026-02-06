@@ -74,19 +74,12 @@ export function registerProjectCreateCommand(parent: Command): void {
         // Create directory structure
         await ensureDir(mdpPath);
 
-        // Issue status directories
-        for (const status of config.issues.statuses) {
-          const dir = join(mdpPath, "issues", status.folderName);
-          await ensureDir(dir);
-          directories.push(`${PROJECT_DIR}/issues/${status.folderName}`);
-        }
+        // Create issues and milestones directories (flat — no status subdirs)
+        await ensureDir(join(mdpPath, "issues"));
+        directories.push(`${PROJECT_DIR}/issues`);
 
-        // Milestone status directories
-        for (const status of config.milestones.statuses) {
-          const dir = join(mdpPath, "milestones", status.folderName);
-          await ensureDir(dir);
-          directories.push(`${PROJECT_DIR}/milestones/${status.folderName}`);
-        }
+        await ensureDir(join(mdpPath, "milestones"));
+        directories.push(`${PROJECT_DIR}/milestones`);
 
         // Docs and templates directories
         await ensureDir(join(mdpPath, "docs"));
