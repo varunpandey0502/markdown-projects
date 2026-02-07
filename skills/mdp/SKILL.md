@@ -13,6 +13,10 @@ allowed-tools: Bash(mdp:*)
 
 A file-based project management CLI. Projects live in `.mdp/` directories containing markdown files with YAML frontmatter.
 
+## IMPORTANT: On first use
+
+When you start working with an existing project, **immediately read `.mdp/settings.json`** to learn the project's valid statuses, types, labels, and priorities. Do not guess or assume defaults — the config is the source of truth. Statuses are grouped by category (e.g., `completed`, `started`), and only the `name` field within each status is used in commands.
+
 ## Installation
 
 ```bash
@@ -47,10 +51,26 @@ Project config is stored in `.mdp/settings.json` with nested entity-scoped objec
 
 ```json
 {
-  "issues": { "prefix": "ISS", "statuses": [...], "priorities": [...], "labels": [...], "types": [...] },
-  "milestones": { "prefix": "M", "statuses": [...], "priorities": [...], "labels": [...] }
+  "issues": {
+    "prefix": "ISS",
+    "statuses": {
+      "triage": [], "backlog": [...], "unstarted": [...],
+      "started": [...], "completed": [...], "canceled": []
+    },
+    "priorities": [...], "labels": [...], "types": [...]
+  },
+  "milestones": {
+    "prefix": "M",
+    "statuses": {
+      "backlog": [], "planned": [...], "in_progress": [...],
+      "completed": [...], "canceled": []
+    },
+    "priorities": [...], "labels": [...]
+  }
 }
 ```
+
+Statuses are grouped by **status category** (lifecycle stage). Each category maps to an array of `{ name, description }` status objects. The system uses categories (not status names) to determine completion, overdue detection, etc.
 
 Issues and milestones have independent statuses, priorities, and labels.
 

@@ -1,4 +1,4 @@
-import type { ProjectConfig, StatusConfig, PriorityConfig, LabelConfig, TypeConfig } from "./types.ts";
+import type { ProjectConfig, IssueStatuses, MilestoneStatuses, PriorityConfig, LabelConfig, TypeConfig } from "./types.ts";
 
 export const PROJECT_DIR = ".mdp";
 export const SETTINGS_FILE = "settings.json";
@@ -8,19 +8,25 @@ export const VERSION = "1.0.0";
 
 // ── Shared across all presets ──
 
-const SHARED_ISSUE_STATUSES: StatusConfig[] = [
-  { name: "Backlog" },
-  { name: "To Do" },
-  { name: "In Progress" },
-  { name: "Done" },
-];
+const SHARED_ISSUE_STATUSES: IssueStatuses = {
+  triage: [],
+  backlog: [{ name: "Backlog", description: "Not yet triaged" }],
+  unstarted: [{ name: "To Do", description: "Ready to be worked on" }],
+  started: [{ name: "In Progress", description: "Actively being worked on" }],
+  completed: [{ name: "Done", description: "Work completed" }],
+  canceled: [],
+};
 
-const SHARED_MILESTONE_STATUSES: StatusConfig[] = [
-  { name: "Planning" },
-  { name: "Active" },
-  { name: "On Hold" },
-  { name: "Completed" },
-];
+const SHARED_MILESTONE_STATUSES: MilestoneStatuses = {
+  backlog: [],
+  planned: [{ name: "Planning", description: "Defining scope and goals" }],
+  in_progress: [
+    { name: "Active", description: "In progress" },
+    { name: "On Hold", description: "Temporarily paused" },
+  ],
+  completed: [{ name: "Completed", description: "All goals met" }],
+  canceled: [],
+};
 
 const SHARED_PRIORITIES: PriorityConfig[] = [
   { name: "None", description: "No priority assigned" },

@@ -84,9 +84,16 @@ export interface Milestone extends MilestoneFrontmatter, MilestoneComputedFields
 
 // ── Configuration ──
 
+export type IssueStatusCategory = "triage" | "backlog" | "unstarted" | "started" | "completed" | "canceled";
+export type MilestoneStatusCategory = "backlog" | "planned" | "in_progress" | "completed" | "canceled";
+
 export interface StatusConfig {
   name: string;
+  description: string;
 }
+
+export type IssueStatuses = Record<IssueStatusCategory, StatusConfig[]>;
+export type MilestoneStatuses = Record<MilestoneStatusCategory, StatusConfig[]>;
 
 export interface PriorityConfig {
   name: string;
@@ -105,7 +112,7 @@ export interface TypeConfig {
 
 export interface IssueConfig {
   prefix: string;
-  statuses: StatusConfig[];
+  statuses: IssueStatuses;
   priorities: PriorityConfig[];
   labels: LabelConfig[];
   types: TypeConfig[];
@@ -113,7 +120,7 @@ export interface IssueConfig {
 
 export interface MilestoneConfig {
   prefix: string;
-  statuses: StatusConfig[];
+  statuses: MilestoneStatuses;
   priorities: PriorityConfig[];
   labels: LabelConfig[];
 }

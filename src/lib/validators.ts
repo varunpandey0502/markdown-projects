@@ -1,14 +1,18 @@
 import type { StatusConfig, PriorityConfig, LabelConfig, TypeConfig } from "../types.ts";
 import { MdpError, invalidStatus, invalidPriority, invalidType, invalidDate } from "../errors.ts";
 
-export function validateStatus(statuses: StatusConfig[], status: string): string {
-  const found = statuses.find(
+export function validateStatus(
+  statuses: Record<string, StatusConfig[]>,
+  status: string,
+): string {
+  const all = (Object.values(statuses) as StatusConfig[][]).flat();
+  const found = all.find(
     (s) => s.name.toLowerCase() === status.toLowerCase(),
   );
   if (!found) {
     throw invalidStatus(
       status,
-      statuses.map((s) => s.name),
+      all.map((s) => s.name),
     );
   }
   return found.name;

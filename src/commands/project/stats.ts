@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { MdpError } from "../../errors.ts";
-import { readConfig } from "../../lib/config.ts";
+import { readConfig, flattenStatuses, getDoneStatuses } from "../../lib/config.ts";
 import { resolveProjectPath } from "../../lib/project-finder.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { readAllIssues } from "../../lib/issue-reader.ts";
@@ -25,7 +25,7 @@ export function registerStatsCommand(program: Command): void {
 
         // By status
         const byStatus: Record<string, number> = {};
-        for (const status of config.issues.statuses) {
+        for (const status of flattenStatuses(config.issues.statuses)) {
           byStatus[status.name] = 0;
         }
         for (const issue of allIssues) {
@@ -74,16 +74,14 @@ export function registerStatsCommand(program: Command): void {
 
         // Overdue (issues with dueDate before today that aren't done)
         const today = new Date().toISOString().split("T")[0]!;
-        const doneStatuses = config.issues.statuses
-          .filter((s) => /^(done|completed|closed)$/i.test(s.name))
-          .map((s) => s.name.toLowerCase());
+        const doneStatuses = getDoneStatuses(config).map((s) => s.toLowerCase());
         const overdueCount = allIssues.filter(
           (i) => i.dueDate && i.dueDate < today && !doneStatuses.includes(i.status.toLowerCase()),
         ).length;
 
         // Milestone stats
         const milestoneByStatus: Record<string, number> = {};
-        for (const s of config.milestones.statuses) {
+        for (const s of flattenStatuses(config.milestones.statuses)) {
           milestoneByStatus[s.name] = 0;
         }
         for (const m of allMilestones) {
