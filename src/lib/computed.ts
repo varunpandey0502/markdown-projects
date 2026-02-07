@@ -91,13 +91,13 @@ export function filterIssues(issues: Issue[], filters: IssueFilters): Issue[] {
     }
 
     if (filters.type && filters.type.length > 0) {
-      if (!filters.type.some((t) => t.toLowerCase() === issue.type.toLowerCase())) {
+      if (!issue.type || !filters.type.some((t) => t.toLowerCase() === issue.type!.toLowerCase())) {
         return false;
       }
     }
 
     if (filters.priority !== undefined) {
-      if (issue.priority.toLowerCase() !== filters.priority.toLowerCase()) {
+      if (!issue.priority || issue.priority.toLowerCase() !== filters.priority.toLowerCase()) {
         return false;
       }
     }
@@ -176,10 +176,10 @@ export function sortIssues(issues: Issue[], field: SortField = "id", order: "asc
         cmp = a.status.localeCompare(b.status);
         break;
       case "priority":
-        cmp = a.priority.localeCompare(b.priority);
+        cmp = (a.priority ?? "").localeCompare(b.priority ?? "");
         break;
       case "type":
-        cmp = a.type.localeCompare(b.type);
+        cmp = (a.type ?? "").localeCompare(b.type ?? "");
         break;
       case "created":
         cmp = a.createdAt.localeCompare(b.createdAt);

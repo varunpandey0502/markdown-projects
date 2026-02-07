@@ -33,8 +33,8 @@ export async function readAllMilestones(projectPath: string, config?: ProjectCon
       const milestone: RawMilestone = {
         id: getString(fm, "id") ?? folder.split("-").slice(0, 2).join("-"),
         title: getString(fm, "title") ?? "",
-        status: getString(fm, "status") ?? "Planning",
-        priority: getString(fm, "priority") ?? "None",
+        status: getString(fm, "status") ?? "",
+        priority: getString(fm, "priority") ?? null,
         labels: getStringArray(fm, "labels"),
         startDate: getString(fm, "startDate"),
         dueDate: getString(fm, "dueDate"),

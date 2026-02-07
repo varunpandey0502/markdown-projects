@@ -16,9 +16,9 @@ export interface LogEntry {
 export interface IssueFrontmatter {
   id: string;
   title: string;
-  type: string;
+  type: string | null;
   status: string;
-  priority: string;
+  priority: string | null;
   labels: string[];
   assignee: string | null;
   milestone: string | null;
@@ -53,7 +53,7 @@ export interface MilestoneFrontmatter {
   id: string;
   title: string;
   status: string;
-  priority: string;
+  priority: string | null;
   labels: string[];
   startDate: string | null;
   dueDate: string | null;
@@ -125,9 +125,17 @@ export interface MilestoneConfig {
   labels: LabelConfig[];
 }
 
-export interface ProjectConfig {
+// PresetConfig = entity config only (used by presets and global config)
+export interface PresetConfig {
   issues: IssueConfig;
   milestones: MilestoneConfig;
+}
+
+// ProjectConfig = full config (PresetConfig + project metadata, written to project.json)
+export interface ProjectConfig extends PresetConfig {
+  name: string;
+  description?: string;
+  instructions?: string;
 }
 
 // ── Settings Hierarchy ──
@@ -144,7 +152,7 @@ export interface GlobalConfigDefaults {
 
 export interface GlobalConfig {
   projects?: RegisteredProject[];
-  presets?: Record<string, ProjectConfig>;
+  presets?: Record<string, PresetConfig>;
   defaults?: GlobalConfigDefaults;
 }
 

@@ -10,6 +10,7 @@ import { slugify } from "../../lib/slug.ts";
 import { buildMarkdown, parseMarkdown } from "../../lib/frontmatter.ts";
 import { ensureDir, writeText, readText, pathExists } from "../../lib/fs-utils.ts";
 import { validateStatus, validatePriority, validateLabels, validateDate, parseCommaSeparated } from "../../lib/validators.ts";
+import { getDefaultMilestoneStatus } from "../../lib/config-defaults.ts";
 import { printSuccess, printError, verboseLog } from "../../output.ts";
 import type { ChecklistItem, LogEntry } from "../../types.ts";
 
@@ -18,8 +19,8 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
     .command("create")
     .description("Create a new milestone")
     .requiredOption("-t, --title <title>", "Milestone title")
-    .option("-s, --status <status>", "Initial status", "Planning")
-    .option("--priority <priority>", "Priority level", "None")
+    .option("-s, --status <status>", "Initial status")
+    .option("--priority <priority>", "Priority level")
     .option("-l, --labels <labels>", "Comma-separated labels")
     .option("--start-date <date>", "Start date (YYYY-MM-DD)")
     .option("--due-date <date>", "Due date (YYYY-MM-DD)")
@@ -38,8 +39,8 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
         verboseLog(`Creating milestone in ${projectPath}`);
 
         // Validate fields
-        const status = validateStatus(config.milestones.statuses, options.status);
-        const priority = validatePriority(config.milestones.priorities, options.priority);
+        const status = validateStatus(config.milestones.statuses, options.status ?? getDefaultMilestoneStatus(config));
+        const priority = options.priority ? validatePriority(config.milestones.priorities, options.priority) : null;
 
         const labelsRaw = parseCommaSeparated(options.labels);
         const labels = validateLabels(config.milestones.labels, labelsRaw);
@@ -85,7 +86,7 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
           id,
           title: options.title,
           status,
-          priority: priority || (templateFrontmatter.priority as string) || "None",
+          priority: priority ?? (templateFrontmatter.priority as string | null) ?? null,
           labels: labels.length > 0 ? labels : (templateFrontmatter.labels as string[]) || [],
           startDate: startDate ?? (templateFrontmatter.startDate as string | null) ?? null,
           dueDate: dueDate || (templateFrontmatter.dueDate as string | null) || null,

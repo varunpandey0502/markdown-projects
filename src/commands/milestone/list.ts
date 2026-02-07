@@ -42,7 +42,7 @@ export function registerMilestoneListCommand(milestoneCmd: Command): void {
         }
 
         if (options.priority) {
-          filtered = filtered.filter((m) => m.priority.toLowerCase() === options.priority.toLowerCase());
+          filtered = filtered.filter((m) => m.priority?.toLowerCase() === options.priority.toLowerCase());
         }
 
         if (options.labels) {
@@ -95,7 +95,7 @@ function sortMilestones(milestones: Milestone[], field: MilestoneSortField = "id
         cmp = a.status.localeCompare(b.status);
         break;
       case "priority":
-        cmp = a.priority.localeCompare(b.priority);
+        cmp = (a.priority ?? "").localeCompare(b.priority ?? "");
         break;
       case "created":
         cmp = a.createdAt.localeCompare(b.createdAt);

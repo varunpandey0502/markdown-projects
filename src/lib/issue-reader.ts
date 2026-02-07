@@ -33,9 +33,9 @@ export async function readAllIssues(projectPath: string, config?: ProjectConfig)
       const issue: RawIssue = {
         id: getString(fm, "id") ?? folder.split("-").slice(0, 2).join("-"),
         title: getString(fm, "title") ?? "",
-        type: getString(fm, "type") ?? "task",
-        status: getString(fm, "status") ?? "Backlog",
-        priority: getString(fm, "priority") ?? "None",
+        type: getString(fm, "type") ?? null,
+        status: getString(fm, "status") ?? "",
+        priority: getString(fm, "priority") ?? null,
         labels: getStringArray(fm, "labels"),
         assignee: getString(fm, "assignee"),
         milestone: getString(fm, "milestone"),

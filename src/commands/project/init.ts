@@ -1,6 +1,7 @@
-import { join, resolve } from "node:path";
+import { join, resolve, basename } from "node:path";
 import type { Command } from "commander";
-import { PROJECT_DIR, SETTINGS_FILE, PRESET_ISSUE_TEMPLATES, DEFAULT_MILESTONE_TEMPLATE, generateIssueTemplate } from "../../constants.ts";
+import { PROJECT_DIR, PROJECT_FILE, generateIssueTemplate, generateMilestoneTemplate } from "../../constants.ts";
+import type { ProjectConfig } from "../../types.ts";
 import { alreadyExists, MdpError } from "../../errors.ts";
 import { ensureDir, pathExists, writeText } from "../../lib/fs-utils.ts";
 import { readGlobalConfig, writeGlobalConfig, resolveAvailablePresets, getDefaultPresetName } from "../../lib/settings.ts";
@@ -18,6 +19,9 @@ export function registerProjectCreateCommand(parent: Command): void {
     .option("--issue-prefix <prefix>", "Prefix for issue IDs")
     .option("--milestone-prefix <prefix>", "Prefix for milestone IDs")
     .option("--tags <tags>", "Comma-separated tags for grouping")
+    .option("--name <name>", "Project name")
+    .option("--description <description>", "One-line project description")
+    .option("--instructions <instructions>", "Free-text guidance for LLMs and collaborators")
     .action(async (options, cmd) => {
       try {
         const globals = getGlobalOptions(cmd);
@@ -55,18 +59,24 @@ export function registerProjectCreateCommand(parent: Command): void {
           );
         }
 
-        // Build config: preset → CLI flag overrides
-        const config = {
-          issues: { ...preset.issues },
-          milestones: { ...preset.milestones },
-        };
+        // Build config: preset → CLI flag overrides → project metadata
+        const issues = { ...preset.issues };
+        const milestones = { ...preset.milestones };
 
         if (options.issuePrefix) {
-          config.issues.prefix = options.issuePrefix;
+          issues.prefix = options.issuePrefix;
         }
         if (options.milestonePrefix) {
-          config.milestones.prefix = options.milestonePrefix;
+          milestones.prefix = options.milestonePrefix;
         }
+
+        const config: ProjectConfig = {
+          name: options.name ?? basename(projectPath),
+          ...(options.description && { description: options.description }),
+          ...(options.instructions && { instructions: options.instructions }),
+          issues,
+          milestones,
+        };
 
         const directories: string[] = [];
         const templates: string[] = [];
@@ -88,21 +98,21 @@ export function registerProjectCreateCommand(parent: Command): void {
         await ensureDir(join(mdpPath, "templates"));
         directories.push(`${PROJECT_DIR}/templates`);
 
-        // Write settings.json
-        const settingsPath = join(mdpPath, SETTINGS_FILE);
-        await writeText(settingsPath, JSON.stringify(config, null, 2) + "\n");
-        verboseLog(`Wrote ${SETTINGS_FILE}`);
+        // Write project.json
+        const projectFilePath = join(mdpPath, PROJECT_FILE);
+        await writeText(projectFilePath, JSON.stringify(config, null, 2) + "\n");
+        verboseLog(`Wrote ${PROJECT_FILE}`);
 
         // Write templates
         if (options.withTemplates) {
-          // Use preset-specific issue template, or generate from config
-          const issueTemplate = PRESET_ISSUE_TEMPLATES[presetName] ?? generateIssueTemplate(config);
+          const issueTemplate = generateIssueTemplate(config, presetName);
           const issueTemplatePath = join(mdpPath, "templates", "issue-template.md");
           await writeText(issueTemplatePath, issueTemplate);
           templates.push(`${PROJECT_DIR}/templates/issue-template.md`);
 
+          const milestoneTemplate = generateMilestoneTemplate(config);
           const milestoneTemplatePath = join(mdpPath, "templates", "milestone-template.md");
-          await writeText(milestoneTemplatePath, DEFAULT_MILESTONE_TEMPLATE);
+          await writeText(milestoneTemplatePath, milestoneTemplate);
           templates.push(`${PROJECT_DIR}/templates/milestone-template.md`);
 
           verboseLog("Wrote default templates");
@@ -126,7 +136,7 @@ export function registerProjectCreateCommand(parent: Command): void {
           preset: presetName,
           registered: { path: projectPath, tags },
           created: {
-            settingsFile: `${PROJECT_DIR}/${SETTINGS_FILE}`,
+            projectFile: `${PROJECT_DIR}/${PROJECT_FILE}`,
             directories,
             templates,
           },

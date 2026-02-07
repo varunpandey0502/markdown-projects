@@ -38,7 +38,8 @@ export function registerStatsCommand(program: Command): void {
           byPriority[p.name] = 0;
         }
         for (const issue of allIssues) {
-          byPriority[issue.priority] = (byPriority[issue.priority] ?? 0) + 1;
+          const key = issue.priority ?? "None";
+          byPriority[key] = (byPriority[key] ?? 0) + 1;
         }
 
         // By type
@@ -47,7 +48,8 @@ export function registerStatsCommand(program: Command): void {
           byType[t.name] = 0;
         }
         for (const issue of allIssues) {
-          byType[issue.type] = (byType[issue.type] ?? 0) + 1;
+          const key = issue.type ?? "Untyped";
+          byType[key] = (byType[key] ?? 0) + 1;
         }
 
         // By label

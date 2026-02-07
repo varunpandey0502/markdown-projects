@@ -1,7 +1,7 @@
-import type { ProjectConfig, IssueStatuses, MilestoneStatuses, PriorityConfig, LabelConfig, TypeConfig } from "./types.ts";
+import type { PresetConfig, ProjectConfig, IssueStatuses, MilestoneStatuses, PriorityConfig, LabelConfig, TypeConfig, IssueStatusCategory, MilestoneStatusCategory } from "./types.ts";
 
 export const PROJECT_DIR = ".mdp";
-export const SETTINGS_FILE = "settings.json";
+export const PROJECT_FILE = "project.json";
 export const USER_SETTINGS_DIR = ".mdp";
 export const USER_CONFIG_FILE = "config.json";
 export const VERSION = "1.0.0";
@@ -36,7 +36,7 @@ const SHARED_PRIORITIES: PriorityConfig[] = [
   { name: "Urgent", description: "Requires immediate attention" },
 ];
 
-function buildPreset(issuePrefix: string, labels: LabelConfig[], types: TypeConfig[]): ProjectConfig {
+function buildPreset(issuePrefix: string, labels: LabelConfig[], types: TypeConfig[]): PresetConfig {
   return {
     issues: {
       prefix: issuePrefix,
@@ -56,7 +56,7 @@ function buildPreset(issuePrefix: string, labels: LabelConfig[], types: TypeConf
 
 // ── Presets ──
 
-export const PRESETS: Record<string, ProjectConfig> = {
+export const PRESETS: Record<string, PresetConfig> = {
   software: buildPreset("ISS", [
     { name: "bug", description: "Bug report" },
     { name: "enhancement", description: "Improvement to existing functionality" },
@@ -143,82 +143,42 @@ export const PRESETS: Record<string, ProjectConfig> = {
 };
 
 export const DEFAULT_PRESET = "software";
-export const DEFAULT_CONFIG: ProjectConfig = PRESETS[DEFAULT_PRESET]!;
+export const DEFAULT_CONFIG: PresetConfig = PRESETS[DEFAULT_PRESET]!;
 export const PRESET_NAMES = Object.keys(PRESETS);
 
 // ── Templates ──
 
-export function generateIssueTemplate(config: ProjectConfig): string {
-  const defaultType = config.issues.types[0]?.name ?? "task";
-  return `---
-title:
-type: ${defaultType}
-status: Backlog
-priority: None
-labels: []
-assignee: null
-milestone: null
-estimate: null
-spent: null
-dueDate: null
-blockedBy: []
-parent: null
-relatedTo: []
-checklist: []
-log: []
----
+const ISSUE_STATUS_CATEGORY_ORDER: IssueStatusCategory[] = [
+  "triage", "backlog", "unstarted", "started", "completed", "canceled",
+];
 
-## Description
+const MILESTONE_STATUS_CATEGORY_ORDER: MilestoneStatusCategory[] = [
+  "backlog", "planned", "in_progress", "completed", "canceled",
+];
 
-[Describe the issue]
-
-## Acceptance Criteria
-
-[What defines "done" for this issue]
-`;
+function getFirstIssueStatus(config: PresetConfig): string {
+  for (const category of ISSUE_STATUS_CATEGORY_ORDER) {
+    const statuses = config.issues.statuses[category];
+    if (statuses.length > 0) {
+      return statuses[0]!.name;
+    }
+  }
+  return "";
 }
 
-export const DEFAULT_MILESTONE_TEMPLATE = `---
-title:
-status: Planning
-priority: None
-labels: []
-startDate: null
-dueDate: null
-checklist: []
-log: []
----
+function getFirstMilestoneStatus(config: PresetConfig): string {
+  for (const category of MILESTONE_STATUS_CATEGORY_ORDER) {
+    const statuses = config.milestones.statuses[category];
+    if (statuses.length > 0) {
+      return statuses[0]!.name;
+    }
+  }
+  return "";
+}
 
-## Goals
-
-[Describe the milestone goals]
-
-## Deliverables
-
-[List expected deliverables]
-`;
-
-// Preset-specific issue templates with domain-relevant body sections
-export const PRESET_ISSUE_TEMPLATES: Record<string, string> = {
-  software: `---
-title:
-type: task
-status: Backlog
-priority: None
-labels: []
-assignee: null
-milestone: null
-estimate: null
-spent: null
-dueDate: null
-blockedBy: []
-parent: null
-relatedTo: []
-checklist: []
-log: []
----
-
-## Description
+// Preset-specific body content (markdown only, no frontmatter)
+const PRESET_ISSUE_BODY: Record<string, string> = {
+  software: `## Description
 
 [Describe the issue]
 
@@ -226,25 +186,7 @@ log: []
 
 [What defines "done" for this issue]
 `,
-  marketing: `---
-title:
-type: campaign
-status: Backlog
-priority: None
-labels: []
-assignee: null
-milestone: null
-estimate: null
-spent: null
-dueDate: null
-blockedBy: []
-parent: null
-relatedTo: []
-checklist: []
-log: []
----
-
-## Brief
+  marketing: `## Brief
 
 [Campaign / content brief]
 
@@ -260,25 +202,7 @@ log: []
 
 [Key performance indicators and targets]
 `,
-  design: `---
-title:
-type: design
-status: Backlog
-priority: None
-labels: []
-assignee: null
-milestone: null
-estimate: null
-spent: null
-dueDate: null
-blockedBy: []
-parent: null
-relatedTo: []
-checklist: []
-log: []
----
-
-## Description
+  design: `## Description
 
 [Describe the design task]
 
@@ -290,25 +214,7 @@ log: []
 
 [Figma links, mood boards, inspiration]
 `,
-  product: `---
-title:
-type: feature
-status: Backlog
-priority: None
-labels: []
-assignee: null
-milestone: null
-estimate: null
-spent: null
-dueDate: null
-blockedBy: []
-parent: null
-relatedTo: []
-checklist: []
-log: []
----
-
-## Problem Statement
+  product: `## Problem Statement
 
 [What problem are we solving?]
 
@@ -320,25 +226,7 @@ As a [user], I want to [action] so that [benefit].
 
 [How do we measure success?]
 `,
-  "social-media": `---
-title:
-type: post
-status: Backlog
-priority: None
-labels: []
-assignee: null
-milestone: null
-estimate: null
-spent: null
-dueDate: null
-blockedBy: []
-parent: null
-relatedTo: []
-checklist: []
-log: []
----
-
-## Content Brief
+  "social-media": `## Content Brief
 
 [Describe the content]
 
@@ -354,11 +242,42 @@ log: []
 
 [Target publish date / time]
 `,
-  generic: `---
+  generic: `## Description
+
+[Describe the issue]
+
+## Acceptance Criteria
+
+[What defines "done" for this issue]
+`,
+};
+
+const DEFAULT_ISSUE_BODY = `## Description
+
+[Describe the issue]
+
+## Acceptance Criteria
+
+[What defines "done" for this issue]
+`;
+
+const DEFAULT_MILESTONE_BODY = `## Goals
+
+[Describe the milestone goals]
+
+## Deliverables
+
+[List expected deliverables]
+`;
+
+export function generateIssueTemplate(config: PresetConfig, presetName?: string): string {
+  const defaultStatus = getFirstIssueStatus(config);
+  const body = (presetName && PRESET_ISSUE_BODY[presetName]) ?? DEFAULT_ISSUE_BODY;
+  return `---
 title:
-type: task
-status: Backlog
-priority: None
+type: null
+status: ${defaultStatus}
+priority: null
 labels: []
 assignee: null
 milestone: null
@@ -372,12 +291,21 @@ checklist: []
 log: []
 ---
 
-## Description
+${body}`;
+}
 
-[Describe the issue]
+export function generateMilestoneTemplate(config: PresetConfig): string {
+  const defaultStatus = getFirstMilestoneStatus(config);
+  return `---
+title:
+status: ${defaultStatus}
+priority: null
+labels: []
+startDate: null
+dueDate: null
+checklist: []
+log: []
+---
 
-## Acceptance Criteria
-
-[What defines "done" for this issue]
-`,
-};
+${DEFAULT_MILESTONE_BODY}`;
+}

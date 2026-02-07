@@ -8,6 +8,7 @@ import { ensureDir, writeText, readText, pathExists, renameEntry } from "./fs-ut
 import { findIssueAbsolutePath } from "./issue-reader.ts";
 import { detectCycle } from "./cycle-detector.ts";
 import { validateStatus, validatePriority, validateType, validateLabels, validateDate, parseCommaSeparated, validateEstimate, validateSpent } from "./validators.ts";
+import { getDefaultIssueStatus } from "./config-defaults.ts";
 import type { ProjectConfig, ChecklistItem, LogEntry } from "../types.ts";
 import type { RawIssue } from "./issue-reader.ts";
 
@@ -136,11 +137,9 @@ export async function prepareIssueCreate(
   const warnings: string[] = [];
 
   // Validate fields
-  const status = validateStatus(config.issues.statuses, input.status ?? "Backlog");
-  const priority = validatePriority(config.issues.priorities, input.priority ?? "None");
-
-  const defaultType = config.issues.types[0]?.name ?? "task";
-  const type = validateType(config.issues.types, input.type ?? defaultType);
+  const status = validateStatus(config.issues.statuses, input.status ?? getDefaultIssueStatus(config));
+  const priority = input.priority ? validatePriority(config.issues.priorities, input.priority) : null;
+  const type = input.type ? validateType(config.issues.types, input.type) : null;
 
   const labelsRaw = normalizeStringArray(input.labels);
   const labels = validateLabels(config.issues.labels, labelsRaw);
@@ -191,9 +190,9 @@ export async function prepareIssueCreate(
   const frontmatter: Record<string, unknown> = {
     id,
     title: input.title,
-    type: type || (templateFrontmatter.type as string) || defaultType,
+    type: type ?? (templateFrontmatter.type as string | null) ?? null,
     status,
-    priority: priority || (templateFrontmatter.priority as string) || "None",
+    priority: priority ?? (templateFrontmatter.priority as string | null) ?? null,
     labels: labels.length > 0 ? labels : (templateFrontmatter.labels as string[]) || [],
     assignee: assignee ?? (templateFrontmatter.assignee as string | null) ?? null,
     milestone: milestone ?? (templateFrontmatter.milestone as string | null) ?? null,
