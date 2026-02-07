@@ -11,8 +11,7 @@ export function parseIdNumber(id: string): number {
 }
 
 export function formatId(prefix: string, num: number): string {
-  const padded = String(num).padStart(3, "0");
-  return `${prefix}-${padded}`;
+  return `${prefix}-${num}`;
 }
 
 export async function getNextId(projectPath: string, prefix: string, entityType: "issues" | "milestones"): Promise<string> {
@@ -29,6 +28,5 @@ export async function getNextId(projectPath: string, prefix: string, entityType:
   }
 
   const nextNum = maxNum + 1;
-  const padded = String(nextNum).padStart(3, "0");
-  return `${prefix}-${padded}`;
+  return `${prefix}-${nextNum}`;
 }

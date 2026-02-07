@@ -35,24 +35,24 @@ mdp issue create -p . \
   --priority High \
   --labels "auth,backend" \
   --assignee agent-1 \
-  --milestone M-001 \
+  --milestone M-1 \
   --estimate 13
 
 # Create child task issues under the parent
 mdp issue create -p . \
   -t "Implement JWT tokens" \
   --type task \
-  --parent ISS-001 \
-  --milestone M-001 \
+  --parent ISS-1 \
+  --milestone M-1 \
   --estimate 5 \
   --assignee agent-1
 
 mdp issue create -p . \
   -t "Write auth tests" \
   --type task \
-  --parent ISS-001 \
-  --blocked-by ISS-002 \
-  --milestone M-001 \
+  --parent ISS-1 \
+  --blocked-by ISS-2 \
+  --milestone M-1 \
   --estimate 3 \
   --assignee agent-1
 
@@ -76,8 +76,8 @@ Use `batch-create` to create multiple issues in a single command. Input is a JSO
 # Create several issues at once
 echo '[
   {"title": "Set up CI pipeline", "type": "chore", "priority": "High", "labels": ["backend"], "assignee": "agent-1"},
-  {"title": "Add unit tests for auth", "type": "task", "priority": "Medium", "labels": ["backend"], "milestone": "M-001", "estimate": 5},
-  {"title": "Fix login redirect bug", "type": "bug", "priority": "High", "labels": ["frontend", "bug"], "blockedBy": ["ISS-001"]}
+  {"title": "Add unit tests for auth", "type": "task", "priority": "Medium", "labels": ["backend"], "milestone": "M-1", "estimate": 5},
+  {"title": "Fix login redirect bug", "type": "bug", "priority": "High", "labels": ["frontend", "bug"], "blockedBy": ["ISS-1"]}
 ]' | mdp issue batch-create -p .
 
 # Preview without creating (dry-run)
@@ -93,22 +93,22 @@ Use `batch-update` to update multiple issues in a single command. Supports all u
 ```bash
 # Move multiple issues to "In Progress" and assign them
 echo '[
-  {"id": "ISS-001", "status": "In Progress", "assignee": "agent-1"},
-  {"id": "ISS-002", "status": "In Progress", "assignee": "agent-2"},
-  {"id": "ISS-003", "status": "In Progress", "assignee": "agent-1"}
+  {"id": "ISS-1", "status": "In Progress", "assignee": "agent-1"},
+  {"id": "ISS-2", "status": "In Progress", "assignee": "agent-2"},
+  {"id": "ISS-3", "status": "In Progress", "assignee": "agent-1"}
 ]' | mdp issue batch-update -p .
 
 # Add labels and update priorities in bulk
 echo '[
-  {"id": "ISS-001", "addLabels": ["urgent"], "priority": "High"},
-  {"id": "ISS-002", "addLabels": ["urgent"], "priority": "High"}
+  {"id": "ISS-1", "addLabels": ["urgent"], "priority": "High"},
+  {"id": "ISS-2", "addLabels": ["urgent"], "priority": "High"}
 ]' | mdp issue batch-update -p .
 
 # Close multiple issues at once
 echo '[
-  {"id": "ISS-001", "status": "Done"},
-  {"id": "ISS-002", "status": "Done"},
-  {"id": "ISS-003", "status": "Done"}
+  {"id": "ISS-1", "status": "Done"},
+  {"id": "ISS-2", "status": "Done"},
+  {"id": "ISS-3", "status": "Done"}
 ]' | mdp issue batch-update -p .
 ```
 
@@ -118,29 +118,29 @@ Items are processed sequentially so that cycle detection and ID lookups remain a
 
 ```bash
 # Start working on an issue
-mdp issue update -p . --id ISS-002 -s "In Progress"
+mdp issue update -p . --id ISS-2 -s "In Progress"
 
 # Add a log entry to record progress
-mdp issue log add -p . --id ISS-002 -b "Starting implementation. Using JWT with refresh tokens." --author agent-1
+mdp issue log add -p . --id ISS-2 -b "Starting implementation. Using JWT with refresh tokens." --author agent-1
 
 # Add checklist items as acceptance criteria
-mdp issue update -p . --id ISS-002 \
+mdp issue update -p . --id ISS-2 \
   --add-checklist "Access token generation,Refresh token rotation,Token revocation"
 
 # Check off completed items
-mdp issue update -p . --id ISS-002 --check "Access token generation,Refresh token rotation"
+mdp issue update -p . --id ISS-2 --check "Access token generation,Refresh token rotation"
 
 # Record effort spent
-mdp issue update -p . --id ISS-002 --spent 4
+mdp issue update -p . --id ISS-2 --spent 4
 
 # Log completion
-mdp issue log add -p . --id ISS-002 -b "Implementation complete. All tests passing." --author agent-1
+mdp issue log add -p . --id ISS-2 -b "Implementation complete. All tests passing." --author agent-1
 
 # Move to done
-mdp issue update -p . --id ISS-002 -s "Done"
+mdp issue update -p . --id ISS-2 -s "Done"
 
 # Check milestone progress
-mdp milestone progress -p . --id M-001
+mdp milestone progress -p . --id M-1
 ```
 
 ## 7. Query and filter
@@ -156,7 +156,7 @@ mdp issue list -p . --type bug --priority High
 mdp issue list -p . --blocked true
 
 # List issues for a milestone sorted by priority
-mdp issue list -p . -m M-001 --sort priority --order desc
+mdp issue list -p . -m M-1 --sort priority --order desc
 
 # List overdue issues
 mdp issue list -p . --due-before 2025-05-01

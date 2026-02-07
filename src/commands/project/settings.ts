@@ -1,6 +1,6 @@
 import type { Command } from "commander";
 import { readConfig } from "../../lib/config.ts";
-import { getProjectSettingsPath } from "../../lib/settings.ts";
+import { getProjectFilePath } from "../../lib/settings.ts";
 import { resolveProjectPath } from "../../lib/project-finder.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { printSuccess, printError } from "../../output.ts";
@@ -18,7 +18,7 @@ export function registerSettingsCommand(program: Command): void {
 
         printSuccess({
           projectPath,
-          settingsFile: getProjectSettingsPath(projectPath),
+          projectFile: getProjectFilePath(projectPath),
           config,
         });
       } catch (err) {

@@ -15,7 +15,7 @@ A file-based project management CLI. Projects live in `.mdp/` directories contai
 
 ## IMPORTANT: On first use
 
-When you start working with an existing project, **immediately read `.mdp/settings.json`** to learn the project's valid statuses, types, labels, and priorities. Do not guess or assume defaults — the config is the source of truth. Statuses are grouped by category (e.g., `completed`, `started`), and only the `name` field within each status is used in commands.
+When you start working with an existing project, **immediately read `.mdp/project.json`** to learn the project's valid statuses, types, labels, and priorities. Do not guess or assume defaults — the config is the source of truth. Statuses are grouped by category (e.g., `completed`, `started`), and only the `name` field within each status is used in commands.
 
 ## Installation
 
@@ -31,14 +31,14 @@ See [INSTALL.md](references/INSTALL.md) for details.
 mdp project create -p . --preset software
 mdp issue create -p . -t "Fix login bug" --type bug --priority High
 mdp issue list -p .
-mdp issue update -p . --id ISS-001 -s "In Progress"
+mdp issue update -p . --id ISS-1 -s "In Progress"
 ```
 
 ## Project structure
 
 ```
 .mdp/
-├── settings.json          # Project config (committed)
+├── project.json          # Project config (committed)
 ├── issues/<status>/       # Issue markdown files by status folder
 ├── milestones/<status>/   # Milestone markdown files by status folder
 ├── docs/                  # Documentation
@@ -47,10 +47,13 @@ mdp issue update -p . --id ISS-001 -s "In Progress"
 
 ## Configuration
 
-Project config is stored in `.mdp/settings.json` with nested entity-scoped objects:
+Project config is stored in `.mdp/project.json` with project metadata and entity-scoped objects:
 
 ```json
 {
+  "name": "my-project",
+  "description": "Optional one-line project description",
+  "instructions": "Optional free-text guidance for LLMs and collaborators",
   "issues": {
     "prefix": "ISS",
     "statuses": {
@@ -74,9 +77,9 @@ Statuses are grouped by **status category** (lifecycle stage). Each category map
 
 Issues and milestones have independent statuses, priorities, and labels.
 
-At runtime, `.mdp/settings.json` is the sole source of truth — no merge layers.
+At runtime, `.mdp/project.json` is the sole source of truth — no merge layers.
 
-At project creation: preset (built-in or custom from `~/.mdp/config.json`) → CLI flag overrides → written to `settings.json`.
+At project creation: preset (built-in or custom from `~/.mdp/config.json`) → CLI flag overrides → written to `project.json`.
 
 Custom presets and default preferences (default preset, output format) are stored in `~/.mdp/config.json`.
 
@@ -90,7 +93,7 @@ All output is JSON: `{ "ok": true, "data": {...} }` or `{ "ok": false, "error": 
 
 ### Project management
 
-- `mdp project create -p <path> [--preset <name>] [-F|--force] [--with-templates] [--no-with-templates] [--issue-prefix <prefix>] [--milestone-prefix <prefix>] [--tags <tags>]` — Create a new project (presets: software, marketing, design, product, social-media, generic)
+- `mdp project create -p <path> [--preset <name>] [-F|--force] [--with-templates] [--no-with-templates] [--issue-prefix <prefix>] [--milestone-prefix <prefix>] [--tags <tags>] [--name <name>] [--description <desc>] [--instructions <text>]` — Create a new project (presets: software, marketing, design, product, social-media, generic)
 - `mdp project settings -p <path>` — Show project settings
 - `mdp project stats -p <path>` — Project statistics
 - `mdp project fix -p <path> [--dry-run]` — Fix folder structure to match frontmatter
@@ -233,7 +236,7 @@ Output:
   "data": {
     "total": 3, "succeeded": 2, "failed": 1,
     "results": [
-      { "ok": true, "data": { "id": "ISS-004", "title": "...", "filePath": "..." } },
+      { "ok": true, "data": { "id": "ISS-4", "title": "...", "filePath": "..." } },
       { "ok": false, "error": { "code": "INVALID_STATUS", "message": "...", "index": 2 } }
     ]
   }

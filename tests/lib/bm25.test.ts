@@ -42,34 +42,34 @@ describe("tokenize", () => {
 describe("search - relevance ranking", () => {
   it("ranks title match higher than content-only match", () => {
     const docs = [
-      makeDoc("ISS-001", "Fix login bug", "Users cannot login due to caching issue"),
-      makeDoc("ISS-002", "Implement caching layer", "Add Redis for performance"),
+      makeDoc("ISS-1", "Fix login bug", "Users cannot login due to caching issue"),
+      makeDoc("ISS-2", "Implement caching layer", "Add Redis for performance"),
     ];
 
     const results = search(docs, "caching");
     expect(results.length).toBe(2);
-    expect(results[0]!.id).toBe("ISS-002"); // title match (higher weight)
-    expect(results[1]!.id).toBe("ISS-001"); // content-only match
+    expect(results[0]!.id).toBe("ISS-2"); // title match (higher weight)
+    expect(results[1]!.id).toBe("ISS-1"); // content-only match
     expect(results[0]!.score).toBeGreaterThan(results[1]!.score);
   });
 
   it("ranks documents with multiple term matches higher", () => {
     const docs = [
-      makeDoc("ISS-001", "API endpoints", "The REST API returns user data"),
-      makeDoc("ISS-002", "Database schema", "Schema for the user table"),
-      makeDoc("ISS-003", "API documentation", "Document all REST API endpoints for users"),
+      makeDoc("ISS-1", "API endpoints", "The REST API returns user data"),
+      makeDoc("ISS-2", "Database schema", "Schema for the user table"),
+      makeDoc("ISS-3", "API documentation", "Document all REST API endpoints for users"),
     ];
 
     const results = search(docs, "API endpoints");
-    expect(results[0]!.id).toBe("ISS-001"); // both terms in title
+    expect(results[0]!.id).toBe("ISS-1"); // both terms in title
   });
 
   it("case-insensitive matching", () => {
-    const docs = [makeDoc("ISS-001", "Redis CACHING", "Performance improvement")];
+    const docs = [makeDoc("ISS-1", "Redis CACHING", "Performance improvement")];
 
     const results = search(docs, "redis caching");
     expect(results.length).toBe(1);
-    expect(results[0]!.id).toBe("ISS-001");
+    expect(results[0]!.id).toBe("ISS-1");
   });
 });
 
@@ -87,8 +87,8 @@ describe("search - limit", () => {
 
   it("returns fewer results if fewer match", () => {
     const docs = [
-      makeDoc("ISS-001", "Caching layer", "Redis caching"),
-      makeDoc("ISS-002", "Unrelated thing", "Nothing here"),
+      makeDoc("ISS-1", "Caching layer", "Redis caching"),
+      makeDoc("ISS-2", "Unrelated thing", "Nothing here"),
     ];
 
     const results = search(docs, "caching", 10);
@@ -100,13 +100,13 @@ describe("search - limit", () => {
 
 describe("search - edge cases", () => {
   it("returns empty for empty query", () => {
-    const docs = [makeDoc("ISS-001", "Something", "Content")];
+    const docs = [makeDoc("ISS-1", "Something", "Content")];
     expect(search(docs, "")).toEqual([]);
     expect(search(docs, "   ")).toEqual([]);
   });
 
   it("returns empty when no documents match", () => {
-    const docs = [makeDoc("ISS-001", "Hello world", "Greetings")];
+    const docs = [makeDoc("ISS-1", "Hello world", "Greetings")];
     expect(search(docs, "caching")).toEqual([]);
   });
 
@@ -115,7 +115,7 @@ describe("search - edge cases", () => {
   });
 
   it("falls back to raw terms when query is all stopwords", () => {
-    const docs = [makeDoc("ISS-001", "What is this", "This is a test")];
+    const docs = [makeDoc("ISS-1", "What is this", "This is a test")];
     // "is" and "this" are stopwords, but should still match via fallback
     const results = search(docs, "is this");
     expect(results.length).toBe(1);
@@ -169,7 +169,7 @@ describe("FIELD_WEIGHTS", () => {
 describe("search - matches", () => {
   it("includes matched fields with snippets", () => {
     const docs = [
-      makeDoc("ISS-001", "Implement caching", "Use Redis for caching at the API gateway"),
+      makeDoc("ISS-1", "Implement caching", "Use Redis for caching at the API gateway"),
     ];
 
     const results = search(docs, "caching");
@@ -187,7 +187,7 @@ describe("search - matches", () => {
 
   it("includes log field when matched", () => {
     const docs = [
-      makeDoc("ISS-001", "Some issue", "No match here", { log: "Fixed the caching bug yesterday" }),
+      makeDoc("ISS-1", "Some issue", "No match here", { log: "Fixed the caching bug yesterday" }),
     ];
 
     const results = search(docs, "caching");
@@ -200,7 +200,7 @@ describe("search - matches", () => {
 
 describe("search - score format", () => {
   it("scores are rounded to 2 decimal places", () => {
-    const docs = [makeDoc("ISS-001", "Caching implementation", "Redis caching layer")];
+    const docs = [makeDoc("ISS-1", "Caching implementation", "Redis caching layer")];
     const results = search(docs, "caching");
     expect(results.length).toBe(1);
 

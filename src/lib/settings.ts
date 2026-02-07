@@ -1,9 +1,10 @@
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { PROJECT_DIR, SETTINGS_FILE, USER_SETTINGS_DIR, USER_CONFIG_FILE, PRESETS, DEFAULT_PRESET } from "../constants.ts";
+import { basename } from "node:path";
+import { PROJECT_DIR, PROJECT_FILE, USER_SETTINGS_DIR, USER_CONFIG_FILE, PRESETS, DEFAULT_PRESET } from "../constants.ts";
 import { configError } from "../errors.ts";
 import { pathExists, readText, writeText, ensureDir } from "./fs-utils.ts";
-import type { ProjectConfig, IssueConfig, MilestoneConfig, GlobalConfig, RegisteredProject } from "../types.ts";
+import type { ProjectConfig, PresetConfig, IssueConfig, MilestoneConfig, GlobalConfig, RegisteredProject } from "../types.ts";
 
 // ── Paths ──
 
@@ -11,8 +12,8 @@ export function getGlobalConfigPath(): string {
   return join(homedir(), USER_SETTINGS_DIR, USER_CONFIG_FILE);
 }
 
-export function getProjectSettingsPath(projectPath: string): string {
-  return join(projectPath, PROJECT_DIR, SETTINGS_FILE);
+export function getProjectFilePath(projectPath: string): string {
+  return join(projectPath, PROJECT_DIR, PROJECT_FILE);
 }
 
 // ── Readers ──
@@ -35,17 +36,42 @@ export async function readGlobalConfig(): Promise<GlobalConfig | null> {
   return null;
 }
 
-export async function readProjectSettings(projectPath: string): Promise<ProjectConfig> {
-  const settingsPath = getProjectSettingsPath(projectPath);
-  if (!(await pathExists(settingsPath))) {
-    throw configError(`settings.json not found at ${settingsPath}`);
+export async function readProjectConfig(projectPath: string): Promise<ProjectConfig> {
+  const projectFilePath = getProjectFilePath(projectPath);
+
+  // Try project.json first, fall back to legacy settings.json
+  let filePath = projectFilePath;
+  let isLegacy = false;
+  if (!(await pathExists(projectFilePath))) {
+    const legacyPath = join(projectPath, PROJECT_DIR, "settings.json");
+    if (await pathExists(legacyPath)) {
+      filePath = legacyPath;
+      isLegacy = true;
+    } else {
+      throw configError(`project.json not found at ${projectFilePath}`);
+    }
   }
+
   try {
-    const raw = await readText(settingsPath);
-    return JSON.parse(raw) as ProjectConfig;
+    const raw = await readText(filePath);
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+
+    // If legacy file or missing name, backfill project metadata
+    if (isLegacy || !parsed.name) {
+      const config: ProjectConfig = {
+        name: (parsed.name as string) ?? basename(projectPath),
+        issues: parsed.issues as ProjectConfig["issues"],
+        milestones: parsed.milestones as ProjectConfig["milestones"],
+      };
+      if (parsed.description) config.description = parsed.description as string;
+      if (parsed.instructions) config.instructions = parsed.instructions as string;
+      return config;
+    }
+
+    return parsed as unknown as ProjectConfig;
   } catch (err) {
     if (err instanceof SyntaxError) {
-      throw configError(`Invalid JSON in project settings (${settingsPath}): ${err.message}`);
+      throw configError(`Invalid JSON in project config (${filePath}): ${err.message}`);
     }
     throw err;
   }
@@ -74,7 +100,7 @@ export function mergeMilestoneConfig(base: MilestoneConfig, override: Partial<Mi
 
 // ── Presets ──
 
-export async function resolveAvailablePresets(): Promise<Record<string, ProjectConfig>> {
+export async function resolveAvailablePresets(): Promise<Record<string, PresetConfig>> {
   const globalConfig = await readGlobalConfig();
   const customPresets = globalConfig?.presets ?? {};
   return { ...PRESETS, ...customPresets };

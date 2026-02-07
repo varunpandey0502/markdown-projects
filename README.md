@@ -35,29 +35,27 @@ mdp project create -p .
 mdp milestone create -p . -t "v1.0 Release" --due-date 2025-06-01
 
 # Create and track issues
-mdp issue create -p . -t "Add authentication" --type feature --milestone M-001
-mdp issue update -p . --id ISS-001 --status "In Progress"
-mdp issue log add -p . --id ISS-001 -b "Starting implementation"
+mdp issue create -p . -t "Add authentication" --type feature --milestone M-1
+mdp issue update -p . --id ISS-1 --status "In Progress"
+mdp issue log add -p . --id ISS-1 -b "Starting implementation"
 
 # Check progress
-mdp milestone progress -p . --id M-001
+mdp milestone progress -p . --id M-1
 ```
 
 ## Project Structure
 
 ```
 .mdp/
-├── settings.json          # Project configuration (committed)
-├── issues/                # Issues organized by status
-│   ├── backlog/
-│   ├── to_do/
-│   ├── in_progress/
-│   └── done/
-├── milestones/            # Milestones organized by status
-│   ├── planning/
-│   ├── active/
-│   ├── on_hold/
-│   └── completed/
+├── project.json           # Project configuration
+├── issues/                # Flat directory of issue folders
+│   ├── ISS-1-add-auth/
+│   │   └── ISS-1-add-auth.md
+│   └── ISS-2-fix-login/
+│       └── ISS-2-fix-login.md
+├── milestones/            # Flat directory of milestone folders
+│   └── M-1-v1-release/
+│       └── M-1-v1-release.md
 ├── docs/                  # Documentation files
 └── templates/             # Issue/milestone templates
 ```
@@ -86,6 +84,8 @@ mdp milestone progress -p . --id M-001
 | `mdp issue get` | Get a single issue by ID |
 | `mdp issue update` | Update issue fields |
 | `mdp issue delete` | Delete an issue and clean up references |
+| `mdp issue batch-create` | Create multiple issues from JSON stdin |
+| `mdp issue batch-update` | Update multiple issues from JSON stdin |
 | `mdp issue log add` | Add a log entry to an issue |
 | `mdp issue log list` | List log entries for an issue |
 | `mdp issue log get` | Get a specific log entry by index |
@@ -107,6 +107,12 @@ mdp milestone progress -p . --id M-001
 | `mdp milestone log get` | Get a specific log entry by index |
 | `mdp milestone log update` | Update a log entry by index |
 | `mdp milestone log delete` | Delete a log entry by index |
+
+### Search
+
+| Command | Description |
+|---------|-------------|
+| `mdp search` | Search issues and milestones by text content |
 
 ### Global Flags
 

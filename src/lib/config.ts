@@ -1,8 +1,8 @@
-import { readProjectSettings } from "./settings.ts";
+import { readProjectConfig } from "./settings.ts";
 import type { ProjectConfig, StatusConfig } from "../types.ts";
 
 export async function readConfig(projectPath: string): Promise<ProjectConfig> {
-  return readProjectSettings(projectPath);
+  return readProjectConfig(projectPath);
 }
 
 export function flattenStatuses<T extends string>(statuses: Record<T, StatusConfig[]>): StatusConfig[] {
