@@ -38,9 +38,13 @@ mdp issue update -p . --id ISS-1 -s "In Progress"
 
 ```
 .mdp/
-├── project.json          # Project config (committed)
-├── issues/<status>/       # Issue markdown files by status folder
-├── milestones/<status>/   # Milestone markdown files by status folder
+├── project.json           # Project config (committed)
+├── issues/                # Flat directory of issue folders
+│   └── ISS-1-add-auth/
+│       └── ISS-1-add-auth.md
+├── milestones/            # Flat directory of milestone folders
+│   └── M-1-v1-release/
+│       └── M-1-v1-release.md
 ├── docs/                  # Documentation
 └── templates/             # Issue/milestone templates
 ```
@@ -119,8 +123,8 @@ mdp issue create -p <path> -t "Title" [options]
 |---|---|
 | `-t, --title <title>` | Issue title (required) |
 | `--type <type>` | Issue type (config-driven) |
-| `-s, --status <status>` | Initial status (default: Backlog) |
-| `--priority <priority>` | Priority level (default: None) |
+| `-s, --status <status>` | Initial status (default: first status in config) |
+| `--priority <priority>` | Priority level (default: null) |
 | `-l, --labels <labels>` | Comma-separated labels |
 | `-a, --assignee <assignee>` | Assignee identifier |
 | `-m, --milestone <milestone>` | Milestone ID |
@@ -270,8 +274,8 @@ mdp milestone create -p <path> -t "Title" [options]
 | Option | Description |
 |---|---|
 | `-t, --title <title>` | Milestone title (required) |
-| `-s, --status <status>` | Initial status (default: Planning) |
-| `--priority <priority>` | Priority level (default: None) |
+| `-s, --status <status>` | Initial status (default: first status in config) |
+| `--priority <priority>` | Priority level (default: null) |
 | `-l, --labels <labels>` | Comma-separated labels |
 | `--start-date <date>` | Start date (YYYY-MM-DD) |
 | `--due-date <date>` | Due date (YYYY-MM-DD) |
@@ -353,6 +357,14 @@ mdp milestone log update -p <path> --id <id> --index <n> [--author <a>] [-b <bod
 mdp milestone log delete -p <path> --id <id> --index <n> [--dry-run]
 ```
 
+### Search
+
+```
+mdp search -p <path> -q "query text" [--limit <n>]
+```
+
+Searches issues and milestones by text content using BF25 ranking. Returns matched fields with snippets.
+
 ## Workflow recommendations
 
 1. Start with `mdp project create -p . --preset software` to set up a project
@@ -363,3 +375,13 @@ mdp milestone log delete -p <path> --id <id> --index <n> [--dry-run]
 6. Use `mdp issue list` with filters to find relevant issues
 
 See [WORKFLOWS.md](references/WORKFLOWS.md) for detailed workflow patterns.
+
+## References
+
+- [INSTALL.md](references/INSTALL.md) — Installation guide
+- [WORKFLOWS.md](references/WORKFLOWS.md) — Detailed workflow patterns
+- [PROJECTS.md](references/PROJECTS.md) — Project commands reference
+- [ISSUES.md](references/ISSUES.md) — Issue commands reference
+- [MILESTONES.md](references/MILESTONES.md) — Milestone commands reference
+- [PROJECT-CONFIG.md](references/PROJECT-CONFIG.md) — Project configuration reference
+- [GLOBAL-CONFIG.md](references/GLOBAL-CONFIG.md) — Global configuration reference
