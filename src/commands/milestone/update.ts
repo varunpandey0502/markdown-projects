@@ -89,15 +89,13 @@ export function registerMilestoneUpdateCommand(milestoneCmd: Command): void {
 
         if (options.labels !== undefined) {
           const parsed = parseCommaSeparated(options.labels);
-          const { validated, warnings: lw } = validateLabels(config.milestones.labels, parsed);
-          warnings.push(...lw);
+          const validated = validateLabels(config.milestones.labels, parsed);
           changes.labels = { from: currentLabels, to: validated };
           currentLabels = validated;
         }
         if (options.addLabels) {
           const toAdd = parseCommaSeparated(options.addLabels);
-          const { validated, warnings: lw } = validateLabels(config.milestones.labels, toAdd);
-          warnings.push(...lw);
+          const validated = validateLabels(config.milestones.labels, toAdd);
           const before = [...currentLabels];
           for (const label of validated) {
             if (!currentLabels.some((l) => l.toLowerCase() === label.toLowerCase())) {

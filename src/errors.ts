@@ -67,6 +67,14 @@ export function invalidType(type: string, validTypes: string[]): MdpError {
   );
 }
 
+export function invalidLabel(label: string, validLabels: string[]): MdpError {
+  return new MdpError(
+    "INVALID_LABEL",
+    `Invalid label "${label}". Valid labels: ${validLabels.join(", ")}`,
+    { label, validLabels },
+  );
+}
+
 export function invalidDate(dateStr: string): MdpError {
   return new MdpError(
     "INVALID_DATE",

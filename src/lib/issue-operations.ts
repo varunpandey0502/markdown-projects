@@ -143,8 +143,7 @@ export async function prepareIssueCreate(
   const type = validateType(config.issues.types, input.type ?? defaultType);
 
   const labelsRaw = normalizeStringArray(input.labels);
-  const { validated: labels, warnings: labelWarnings } = validateLabels(config.issues.labels, labelsRaw);
-  warnings.push(...labelWarnings);
+  const labels = validateLabels(config.issues.labels, labelsRaw);
 
   const estimate = input.estimate !== undefined ? validateEstimate(String(input.estimate)) : null;
   const spent = input.spent !== undefined ? validateSpent(String(input.spent)) : null;
@@ -318,15 +317,13 @@ export function applyIssueUpdate(
 
   if (input.labels !== undefined) {
     const parsed = normalizeStringArray(input.labels);
-    const { validated, warnings: lw } = validateLabels(config.issues.labels, parsed);
-    warnings.push(...lw);
+    const validated = validateLabels(config.issues.labels, parsed);
     changes.labels = { from: currentLabels, to: validated };
     currentLabels = validated;
   }
   if (input.addLabels !== undefined) {
     const toAdd = normalizeStringArray(input.addLabels);
-    const { validated, warnings: lw } = validateLabels(config.issues.labels, toAdd);
-    warnings.push(...lw);
+    const validated = validateLabels(config.issues.labels, toAdd);
     const before = [...currentLabels];
     for (const label of validated) {
       if (!currentLabels.some((l) => l.toLowerCase() === label.toLowerCase())) {

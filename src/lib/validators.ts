@@ -1,5 +1,5 @@
 import type { StatusConfig, PriorityConfig, LabelConfig, TypeConfig } from "../types.ts";
-import { MdpError, invalidStatus, invalidPriority, invalidType, invalidDate } from "../errors.ts";
+import { MdpError, invalidStatus, invalidPriority, invalidType, invalidLabel, invalidDate } from "../errors.ts";
 
 export function validateStatus(
   statuses: Record<string, StatusConfig[]>,
@@ -44,8 +44,7 @@ export function validateType(types: TypeConfig[], type: string): string {
   return found.name;
 }
 
-export function validateLabels(labels: LabelConfig[], inputLabels: string[]): { validated: string[]; warnings: string[] } {
-  const warnings: string[] = [];
+export function validateLabels(labels: LabelConfig[], inputLabels: string[]): string[] {
   const validated: string[] = [];
 
   for (const label of inputLabels) {
@@ -55,16 +54,13 @@ export function validateLabels(labels: LabelConfig[], inputLabels: string[]): { 
     const found = labels.find(
       (l) => l.name.toLowerCase() === trimmed.toLowerCase(),
     );
-    if (found) {
-      validated.push(found.name);
-    } else {
-      // Labels not in config are accepted but produce a warning
-      validated.push(trimmed);
-      warnings.push(`Label "${trimmed}" is not defined in project configuration`);
+    if (!found) {
+      throw invalidLabel(trimmed, labels.map((l) => l.name));
     }
+    validated.push(found.name);
   }
 
-  return { validated, warnings };
+  return validated;
 }
 
 export function validateDate(dateStr: string): string {

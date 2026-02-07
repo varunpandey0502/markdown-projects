@@ -42,8 +42,7 @@ export function registerMilestoneCreateCommand(milestoneCmd: Command): void {
         const priority = validatePriority(config.milestones.priorities, options.priority);
 
         const labelsRaw = parseCommaSeparated(options.labels);
-        const { validated: labels, warnings: labelWarnings } = validateLabels(config.milestones.labels, labelsRaw);
-        warnings.push(...labelWarnings);
+        const labels = validateLabels(config.milestones.labels, labelsRaw);
 
         const startDate = options.startDate ? validateDate(options.startDate) : null;
         const dueDate = options.dueDate ? validateDate(options.dueDate) : null;
