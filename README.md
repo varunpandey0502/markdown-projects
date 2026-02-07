@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="../docs/logo.svg" alt="Markdown Projects" width="80" />
+</p>
+
 # Markdown Projects (`mdp`)
 
 A CLI tool for file-based project management. All data lives as markdown files with YAML frontmatter inside a `.mdp/` directory. No database, no server, no lock-in — just plain text files that work with git.
