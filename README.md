@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="../docs/logo.svg" alt="Markdown Projects" width="80" />
+  <img src="./logo.svg" alt="Markdown Projects" width="80" />
 </p>
 
 # Markdown Projects (`mdp`)
