@@ -32,12 +32,3 @@ Re-running the install command pulls the latest version.
 bun remove -g markdown-projects
 ```
 
-## Setup for Claude Code
-
-Add the skill to your Claude Code configuration:
-
-```bash
-claude skill add /path/to/markdown-projects-cli/skills/mdp
-```
-
-Or use mdp directly via Bash tool calls after installing globally.
