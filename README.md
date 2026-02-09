@@ -124,7 +124,7 @@ Every command accepts: `-p <path>` (project path), `-f json|table` (output forma
 
 ## Documentation
 
-Full documentation: [markdown-projects.vercel.app](https://markdown-projects.vercel.app)
+Full documentation: [markdownprojects.com](https://markdownprojects.com)
 
 ## License
 
