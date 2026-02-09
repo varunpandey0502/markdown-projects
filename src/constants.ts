@@ -4,7 +4,7 @@ export const PROJECT_DIR = ".mdp";
 export const PROJECT_FILE = "project.json";
 export const USER_SETTINGS_DIR = ".mdp";
 export const USER_CONFIG_FILE = "config.json";
-export const VERSION = "1.0.0";
+export const VERSION = "1.1.0";
 
 // ── Shared across all presets ──
 

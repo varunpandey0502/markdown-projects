@@ -154,6 +154,7 @@ export interface GlobalConfig {
   projects?: RegisteredProject[];
   presets?: Record<string, PresetConfig>;
   defaults?: GlobalConfigDefaults;
+  tags?: Record<string, string>;
 }
 
 // ── Output ──

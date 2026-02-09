@@ -15,6 +15,19 @@ mdp project tag <path> --add "v2" --remove "v1" # Manage tags
 
 Projects are automatically registered when created with `mdp project create`.
 
+## Tag Descriptions
+
+The `tags` object maps tag names to descriptions. This provides context about what a tag represents (e.g., a company, team, or domain) so LLMs and collaborators can understand project groupings.
+
+```bash
+mdp project tag-describe acme -d "Acme Corp — B2B SaaS for supply chain management"
+mdp project tag-describe acme          # View a tag's description
+mdp project tag-describe acme --remove # Remove a tag's description
+mdp project tag-list                   # List all tags with descriptions and project counts
+```
+
+Tag descriptions are also included in `mdp project list` output via the `tagDescriptions` field.
+
 ## Presets
 
 A preset is a one-time configuration template used at project creation. After creation, the preset has no further effect -- `project.json` is self-contained.
@@ -57,6 +70,10 @@ If a custom preset has the same name as a built-in preset, the custom one takes 
     { "path": "/home/user/myapp", "tags": ["work", "backend"] },
     { "path": "/home/user/blog", "tags": ["personal"] }
   ],
+  "tags": {
+    "work": "Acme Corp — B2B SaaS for supply chain management",
+    "backend": "Backend services and APIs"
+  },
   "presets": {
     "my-team": {
       "issues": {

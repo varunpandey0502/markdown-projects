@@ -106,10 +106,12 @@ All output is JSON: `{ "ok": true, "data": {...} }` or `{ "ok": false, "error": 
 
 Manage projects in `~/.mdp/config.json`:
 
-- `mdp project list [--tag <tag>]`
+- `mdp project list [--tag <tag>]` — List registered projects (includes `tagDescriptions` in output)
 - `mdp project add <path> [--tags <tags>]`
 - `mdp project remove <path>`
 - `mdp project tag <path> --add <tags> | --remove <tags>`
+- `mdp project tag-describe <tag> [-d <text>] [--remove]` — Set, view, or remove a tag description
+- `mdp project tag-list` — List all tags with descriptions and project counts
 
 ### Issues
 
