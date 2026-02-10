@@ -56,29 +56,7 @@ mdp project tag <path> --add <tags>
 mdp project tag <path> --remove <tags>
 ```
 
-Add or remove tags from a registered project.
-
-## Describe Tag
-
-```bash
-mdp project tag-describe <tag> -d "description"
-mdp project tag-describe <tag>
-mdp project tag-describe <tag> --remove
-```
-
-Set, view, or remove a tag description. Tag descriptions provide context about what a tag represents (e.g., a company, team, or domain), stored in `~/.mdp/config.json`.
-
-- With `-d`: sets the description
-- With no flags: returns the current description (or `null`)
-- With `--remove`: deletes the description
-
-## List Tags
-
-```bash
-mdp project tag-list
-```
-
-List all known tags with their descriptions and project counts. Includes tags from both project entries and tag descriptions.
+Add or remove tags from a registered project. Tags added via `--add` are auto-created in the global tag list if they don't already exist.
 
 ## Show Settings
 

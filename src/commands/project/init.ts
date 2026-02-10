@@ -4,7 +4,7 @@ import { PROJECT_DIR, PROJECT_FILE, generateIssueTemplate, generateMilestoneTemp
 import type { ProjectConfig } from "../../types.ts";
 import { alreadyExists, MdpError } from "../../errors.ts";
 import { ensureDir, pathExists, writeText } from "../../lib/fs-utils.ts";
-import { readGlobalConfig, writeGlobalConfig, resolveAvailablePresets, getDefaultPresetName } from "../../lib/settings.ts";
+import { readGlobalConfig, writeGlobalConfig, resolveAvailablePresets, getDefaultPresetName, ensureTagsExist } from "../../lib/settings.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { printSuccess, printError, verboseLog } from "../../output.ts";
 
@@ -125,6 +125,7 @@ export function registerProjectCreateCommand(parent: Command): void {
         const globalConfig = (await readGlobalConfig()) ?? {};
         const projects = globalConfig.projects ?? [];
         if (!projects.some((p) => p.path === projectPath)) {
+          ensureTagsExist(globalConfig, tags);
           projects.push({ path: projectPath, tags });
           globalConfig.projects = projects;
           await writeGlobalConfig(globalConfig);

@@ -2,7 +2,7 @@ import { join, resolve } from "node:path";
 import type { Command } from "commander";
 import { PROJECT_DIR } from "../../constants.ts";
 import { pathExists } from "../../lib/fs-utils.ts";
-import { readGlobalConfig, writeGlobalConfig } from "../../lib/settings.ts";
+import { readGlobalConfig, writeGlobalConfig, ensureTagsExist } from "../../lib/settings.ts";
 import { printSuccess, printError } from "../../output.ts";
 import { MdpError } from "../../errors.ts";
 
@@ -44,6 +44,7 @@ export function registerProjectAddCommand(parent: Command): void {
           );
         }
 
+        ensureTagsExist(settings, tags);
         projects.push({ path: absPath, tags });
         settings.projects = projects;
 

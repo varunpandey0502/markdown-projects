@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import type { Command } from "commander";
-import { readGlobalConfig, writeGlobalConfig } from "../../lib/settings.ts";
+import { readGlobalConfig, writeGlobalConfig, ensureTagsExist } from "../../lib/settings.ts";
 import { printSuccess, printError } from "../../output.ts";
 import { MdpError } from "../../errors.ts";
 
@@ -36,6 +36,7 @@ export function registerProjectTagCommand(parent: Command): void {
 
         if (options.add) {
           const toAdd = options.add.split(",").map((t: string) => t.trim()).filter(Boolean);
+          ensureTagsExist(settings, toAdd);
           for (const tag of toAdd) {
             if (!project.tags.includes(tag)) {
               project.tags.push(tag);

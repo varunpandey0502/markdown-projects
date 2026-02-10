@@ -116,6 +116,16 @@ export async function getDefaultFormat(): Promise<"json" | "table"> {
   return globalConfig?.defaults?.format ?? "json";
 }
 
+// ── Tag Helpers ──
+
+export function ensureTagsExist(config: GlobalConfig, tags: string[]): void {
+  if (tags.length === 0) return;
+  if (!config.tags) config.tags = {};
+  for (const tag of tags) {
+    if (!(tag in config.tags)) config.tags[tag] = "";
+  }
+}
+
 // ── Registered Projects ──
 
 export async function readRegisteredProjects(): Promise<RegisteredProject[]> {

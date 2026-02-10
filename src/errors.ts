@@ -147,6 +147,22 @@ export function configError(reason: string): MdpError {
   );
 }
 
+export function tagNotFound(tag: string): MdpError {
+  return new MdpError(
+    "NOT_FOUND",
+    `Tag "${tag}" not found`,
+    { tag },
+  );
+}
+
+export function tagInUse(tag: string, projectCount: number, projectPaths: string[]): MdpError {
+  return new MdpError(
+    "TAG_IN_USE",
+    `Tag "${tag}" is in use by ${projectCount} project(s)`,
+    { tag, projectCount, projectPaths },
+  );
+}
+
 export function logEntryNotFound(index: number, entityId: string): MdpError {
   return new MdpError(
     "LOG_ENTRY_NOT_FOUND",

@@ -3,9 +3,9 @@ import { readGlobalConfig } from "../../lib/settings.ts";
 import { printSuccess, printError } from "../../output.ts";
 import { MdpError } from "../../errors.ts";
 
-export function registerProjectTagListCommand(parent: Command): void {
+export function registerTagListCommand(parent: Command): void {
   parent
-    .command("tag-list")
+    .command("list")
     .description("List all tags with descriptions and project counts")
     .action(async () => {
       try {

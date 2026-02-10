@@ -13,8 +13,10 @@ import { registerProjectListCommand } from "./commands/project/list.ts";
 import { registerProjectAddCommand } from "./commands/project/add.ts";
 import { registerProjectRemoveCommand } from "./commands/project/remove.ts";
 import { registerProjectTagCommand } from "./commands/project/tag.ts";
-import { registerProjectTagDescribeCommand } from "./commands/project/tag-describe.ts";
-import { registerProjectTagListCommand } from "./commands/project/tag-list.ts";
+import { registerTagListCommand } from "./commands/tag/list.ts";
+import { registerTagAddCommand } from "./commands/tag/add.ts";
+import { registerTagUpdateCommand } from "./commands/tag/update.ts";
+import { registerTagRemoveCommand } from "./commands/tag/remove.ts";
 import { registerStatsCommand } from "./commands/project/stats.ts";
 import { registerFixCommand } from "./commands/project/sync.ts";
 import { registerIssueCreateCommand } from "./commands/issue/create.ts";
@@ -67,11 +69,19 @@ registerProjectAddCommand(projectCmd);
 registerProjectListCommand(projectCmd);
 registerProjectRemoveCommand(projectCmd);
 registerProjectTagCommand(projectCmd);
-registerProjectTagDescribeCommand(projectCmd);
-registerProjectTagListCommand(projectCmd);
 registerSettingsCommand(projectCmd);
 registerStatsCommand(projectCmd);
 registerFixCommand(projectCmd);
+
+// ── Tag subcommand group ──
+const tagCmd = program
+  .command("tag")
+  .description("Manage tags");
+
+registerTagListCommand(tagCmd);
+registerTagAddCommand(tagCmd);
+registerTagUpdateCommand(tagCmd);
+registerTagRemoveCommand(tagCmd);
 
 // ── Issue subcommand group ──
 const issueCmd = program
