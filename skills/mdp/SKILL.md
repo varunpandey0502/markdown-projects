@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires mdp installed via `bun install -g github:varunpandey0502/markdown-projects`.
 metadata:
   author: varunpandey0502
-  version: "1.0"
+  version: "1.2"
 allowed-tools: Bash(mdp:*)
 ---
 
