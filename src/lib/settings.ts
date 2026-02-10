@@ -1,10 +1,10 @@
 import { join } from "node:path";
 import { homedir } from "node:os";
-import { basename } from "node:path";
-import { PROJECT_DIR, PROJECT_FILE, USER_SETTINGS_DIR, USER_CONFIG_FILE, PRESETS, DEFAULT_PRESET } from "../constants.ts";
+import { PROJECT_DIR, PROJECT_FILE, PROJECT_MD, USER_SETTINGS_DIR, USER_CONFIG_FILE, PRESETS, DEFAULT_PRESET } from "../constants.ts";
 import { configError } from "../errors.ts";
 import { pathExists, readText, writeText, ensureDir } from "./fs-utils.ts";
-import type { ProjectConfig, PresetConfig, IssueConfig, MilestoneConfig, GlobalConfig, RegisteredProject } from "../types.ts";
+import { parseMarkdown, getString, getProjectLogEntries } from "./frontmatter.ts";
+import type { PresetConfig, IssueConfig, MilestoneConfig, GlobalConfig, RegisteredProject, ProjectData, ProjectHealth } from "../types.ts";
 
 // ── Paths ──
 
@@ -36,45 +36,62 @@ export async function readGlobalConfig(): Promise<GlobalConfig | null> {
   return null;
 }
 
-export async function readProjectConfig(projectPath: string): Promise<ProjectConfig> {
+export async function readProjectConfig(projectPath: string): Promise<PresetConfig> {
   const projectFilePath = getProjectFilePath(projectPath);
 
-  // Try project.json first, fall back to legacy settings.json
-  let filePath = projectFilePath;
-  let isLegacy = false;
   if (!(await pathExists(projectFilePath))) {
-    const legacyPath = join(projectPath, PROJECT_DIR, "settings.json");
-    if (await pathExists(legacyPath)) {
-      filePath = legacyPath;
-      isLegacy = true;
-    } else {
-      throw configError(`project.json not found at ${projectFilePath}`);
-    }
+    throw configError(`settings.json not found at ${projectFilePath}`);
   }
 
   try {
-    const raw = await readText(filePath);
-    const parsed = JSON.parse(raw) as Record<string, unknown>;
-
-    // If legacy file or missing name, backfill project metadata
-    if (isLegacy || !parsed.name) {
-      const config: ProjectConfig = {
-        name: (parsed.name as string) ?? basename(projectPath),
-        issues: parsed.issues as ProjectConfig["issues"],
-        milestones: parsed.milestones as ProjectConfig["milestones"],
-      };
-      if (parsed.description) config.description = parsed.description as string;
-      if (parsed.instructions) config.instructions = parsed.instructions as string;
-      return config;
-    }
-
-    return parsed as unknown as ProjectConfig;
+    const raw = await readText(projectFilePath);
+    const parsed = JSON.parse(raw) as PresetConfig;
+    return parsed;
   } catch (err) {
     if (err instanceof SyntaxError) {
-      throw configError(`Invalid JSON in project config (${filePath}): ${err.message}`);
+      throw configError(`Invalid JSON in project config (${projectFilePath}): ${err.message}`);
     }
     throw err;
   }
+}
+
+export function getProjectMdPath(projectPath: string): string {
+  return join(projectPath, PROJECT_DIR, PROJECT_MD);
+}
+
+const VALID_HEALTH_VALUES = new Set(["on-track", "at-risk", "off-track"]);
+
+export async function readProjectMd(projectPath: string): Promise<ProjectData> {
+  const filePath = getProjectMdPath(projectPath);
+
+  if (!(await pathExists(filePath))) {
+    throw configError(`project.md not found at ${filePath}`);
+  }
+
+  const raw = await readText(filePath);
+  const parsed = parseMarkdown(raw);
+  const fm = parsed.frontmatter;
+
+  const healthRaw = getString(fm, "health");
+  const health = healthRaw && VALID_HEALTH_VALUES.has(healthRaw) ? (healthRaw as ProjectHealth) : undefined;
+
+  const rawLog = getProjectLogEntries(fm, "log");
+  const log = rawLog.map((entry) => ({
+    ...entry,
+    health: entry.health && VALID_HEALTH_VALUES.has(entry.health) ? (entry.health as ProjectHealth) : undefined,
+  }));
+
+  return {
+    title: getString(fm, "title") ?? "",
+    description: getString(fm, "description") ?? undefined,
+    instructions: getString(fm, "instructions") ?? undefined,
+    health,
+    log,
+    createdAt: getString(fm, "createdAt") ?? new Date().toISOString(),
+    updatedAt: getString(fm, "updatedAt") ?? new Date().toISOString(),
+    filePath: `${PROJECT_DIR}/${PROJECT_MD}`,
+    content: parsed.content,
+  };
 }
 
 // ── Config Merge Helpers (used at project creation time) ──

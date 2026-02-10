@@ -3,14 +3,14 @@ import { PROJECT_DIR } from "../constants.ts";
 import { readConfig } from "./config.ts";
 import { listDir, readText, isDirectory } from "./fs-utils.ts";
 import { parseMarkdown, getString, getNumber, getStringArray, getChecklist, getLogEntries } from "./frontmatter.ts";
-import type { IssueFrontmatter, ProjectConfig } from "../types.ts";
+import type { IssueFrontmatter, PresetConfig } from "../types.ts";
 
 export interface RawIssue extends IssueFrontmatter {
   filePath: string;
   content: string;
 }
 
-export async function readAllIssues(projectPath: string, config?: ProjectConfig): Promise<RawIssue[]> {
+export async function readAllIssues(projectPath: string, config?: PresetConfig): Promise<RawIssue[]> {
   if (!config) {
     config = await readConfig(projectPath);
   }
@@ -62,7 +62,7 @@ export async function readAllIssues(projectPath: string, config?: ProjectConfig)
   return issues;
 }
 
-export async function findIssueById(projectPath: string, issueId: string, config?: ProjectConfig): Promise<RawIssue | null> {
+export async function findIssueById(projectPath: string, issueId: string, config?: PresetConfig): Promise<RawIssue | null> {
   const issues = await readAllIssues(projectPath, config);
   return issues.find((i) => i.id.toLowerCase() === issueId.toLowerCase()) ?? null;
 }

@@ -9,7 +9,7 @@ import { findIssueAbsolutePath } from "./issue-reader.ts";
 import { detectCycle } from "./cycle-detector.ts";
 import { validateStatus, validatePriority, validateType, validateLabels, validateDate, parseCommaSeparated, validateEstimate, validateSpent } from "./validators.ts";
 import { getDefaultIssueStatus } from "./config-defaults.ts";
-import type { ProjectConfig, ChecklistItem, LogEntry } from "../types.ts";
+import type { PresetConfig, ChecklistItem, LogEntry } from "../types.ts";
 import type { RawIssue } from "./issue-reader.ts";
 
 // ── Batch output types ──
@@ -130,7 +130,7 @@ function normalizeNumericField(value: number | string | null | undefined): numbe
 
 export async function prepareIssueCreate(
   input: IssueCreateInput,
-  config: ProjectConfig,
+  config: PresetConfig,
   projectPath: string,
   id: string,
 ): Promise<PreparedIssueCreate> {
@@ -240,7 +240,7 @@ export function applyIssueUpdate(
   rawIssue: RawIssue,
   parsedFm: Record<string, unknown>,
   parsedContent: string,
-  config: ProjectConfig,
+  config: PresetConfig,
   allIssues: RawIssue[],
 ): AppliedIssueUpdate {
   const warnings: string[] = [];

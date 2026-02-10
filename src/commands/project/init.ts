@@ -1,9 +1,10 @@
 import { join, resolve, basename } from "node:path";
 import type { Command } from "commander";
-import { PROJECT_DIR, PROJECT_FILE, generateIssueTemplate, generateMilestoneTemplate } from "../../constants.ts";
-import type { ProjectConfig } from "../../types.ts";
+import { PROJECT_DIR, PROJECT_FILE, PROJECT_MD, generateIssueTemplate, generateMilestoneTemplate } from "../../constants.ts";
+import type { PresetConfig } from "../../types.ts";
 import { alreadyExists, MdpError } from "../../errors.ts";
 import { ensureDir, pathExists, writeText } from "../../lib/fs-utils.ts";
+import { buildMarkdown } from "../../lib/frontmatter.ts";
 import { readGlobalConfig, writeGlobalConfig, resolveAvailablePresets, getDefaultPresetName, ensureTagsExist } from "../../lib/settings.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { printSuccess, printError, verboseLog } from "../../output.ts";
@@ -19,7 +20,8 @@ export function registerProjectCreateCommand(parent: Command): void {
     .option("--issue-prefix <prefix>", "Prefix for issue IDs")
     .option("--milestone-prefix <prefix>", "Prefix for milestone IDs")
     .option("--tags <tags>", "Comma-separated tags for grouping")
-    .option("--name <name>", "Project name")
+    .option("--title <title>", "Project title")
+    .option("--name <name>", "Project title (alias for --title)")
     .option("--description <description>", "One-line project description")
     .option("--instructions <instructions>", "Free-text guidance for LLMs and collaborators")
     .action(async (options, cmd) => {
@@ -59,7 +61,7 @@ export function registerProjectCreateCommand(parent: Command): void {
           );
         }
 
-        // Build config: preset → CLI flag overrides → project metadata
+        // Build config: preset → CLI flag overrides
         const issues = { ...preset.issues };
         const milestones = { ...preset.milestones };
 
@@ -70,13 +72,25 @@ export function registerProjectCreateCommand(parent: Command): void {
           milestones.prefix = options.milestonePrefix;
         }
 
-        const config: ProjectConfig = {
-          name: options.name ?? basename(projectPath),
-          ...(options.description && { description: options.description }),
-          ...(options.instructions && { instructions: options.instructions }),
+        const settingsConfig: PresetConfig = {
           issues,
           milestones,
         };
+
+        // Build project.md frontmatter
+        const title = options.title ?? options.name ?? basename(projectPath);
+        const now = new Date().toISOString();
+        const projectFrontmatter: Record<string, unknown> = {
+          title,
+          description: options.description ?? null,
+          instructions: options.instructions ?? null,
+          health: null,
+          log: [],
+          createdAt: now,
+          updatedAt: now,
+        };
+
+        const projectBody = `## Overview\n\n[Describe the project]\n`;
 
         const directories: string[] = [];
         const templates: string[] = [];
@@ -98,19 +112,25 @@ export function registerProjectCreateCommand(parent: Command): void {
         await ensureDir(join(mdpPath, "templates"));
         directories.push(`${PROJECT_DIR}/templates`);
 
-        // Write project.json
-        const projectFilePath = join(mdpPath, PROJECT_FILE);
-        await writeText(projectFilePath, JSON.stringify(config, null, 2) + "\n");
+        // Write settings.json
+        const settingsFilePath = join(mdpPath, PROJECT_FILE);
+        await writeText(settingsFilePath, JSON.stringify(settingsConfig, null, 2) + "\n");
         verboseLog(`Wrote ${PROJECT_FILE}`);
+
+        // Write project.md
+        const projectMdPath = join(mdpPath, PROJECT_MD);
+        const projectMarkdown = buildMarkdown(projectFrontmatter, projectBody);
+        await writeText(projectMdPath, projectMarkdown);
+        verboseLog(`Wrote ${PROJECT_MD}`);
 
         // Write templates
         if (options.withTemplates) {
-          const issueTemplate = generateIssueTemplate(config, presetName);
+          const issueTemplate = generateIssueTemplate(settingsConfig, presetName);
           const issueTemplatePath = join(mdpPath, "templates", "issue-template.md");
           await writeText(issueTemplatePath, issueTemplate);
           templates.push(`${PROJECT_DIR}/templates/issue-template.md`);
 
-          const milestoneTemplate = generateMilestoneTemplate(config);
+          const milestoneTemplate = generateMilestoneTemplate(settingsConfig);
           const milestoneTemplatePath = join(mdpPath, "templates", "milestone-template.md");
           await writeText(milestoneTemplatePath, milestoneTemplate);
           templates.push(`${PROJECT_DIR}/templates/milestone-template.md`);
@@ -137,7 +157,8 @@ export function registerProjectCreateCommand(parent: Command): void {
           preset: presetName,
           registered: { path: projectPath, tags },
           created: {
-            projectFile: `${PROJECT_DIR}/${PROJECT_FILE}`,
+            settingsFile: `${PROJECT_DIR}/${PROJECT_FILE}`,
+            projectFile: `${PROJECT_DIR}/${PROJECT_MD}`,
             directories,
             templates,
           },

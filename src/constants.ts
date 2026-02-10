@@ -1,10 +1,11 @@
-import type { PresetConfig, ProjectConfig, IssueStatuses, MilestoneStatuses, PriorityConfig, LabelConfig, TypeConfig, IssueStatusCategory, MilestoneStatusCategory } from "./types.ts";
+import type { PresetConfig, IssueStatuses, MilestoneStatuses, PriorityConfig, LabelConfig, TypeConfig, IssueStatusCategory, MilestoneStatusCategory } from "./types.ts";
 
 export const PROJECT_DIR = ".mdp";
-export const PROJECT_FILE = "project.json";
+export const PROJECT_FILE = "settings.json";
+export const PROJECT_MD = "project.md";
 export const USER_SETTINGS_DIR = ".mdp";
-export const USER_CONFIG_FILE = "config.json";
-export const VERSION = "1.2.0";
+export const USER_CONFIG_FILE = "settings.json";
+export const VERSION = "1.3.0";
 
 // ── Shared across all presets ──
 

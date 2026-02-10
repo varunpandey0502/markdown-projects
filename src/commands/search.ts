@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import { MdpError, invalidInput } from "../errors.ts";
 import { readConfig } from "../lib/config.ts";
+import { readProjectMd } from "../lib/settings.ts";
 import { resolveProjectPath } from "../lib/project-finder.ts";
 import { getGlobalOptions } from "../lib/command-utils.ts";
 import { readAllIssues } from "../lib/issue-reader.ts";
@@ -12,8 +13,9 @@ import { printSuccess, printError, printTable, getFormat, verboseLog } from "../
 import { formatTable, SEARCH_TABLE_COLUMNS } from "../lib/table.ts";
 import { search } from "../lib/bm25.ts";
 import type { SearchDocument, SearchableField, SearchResult } from "../lib/bm25.ts";
+import type { ProjectData } from "../types.ts";
 
-const VALID_ENTITIES = ["issues", "milestones", "all"] as const;
+const VALID_ENTITIES = ["issues", "milestones", "project", "all"] as const;
 const VALID_FIELDS: SearchableField[] = ["title", "content", "log", "checklist"];
 
 function filterByStatus<T extends { status: string }>(items: T[], statuses: string[]): T[] {
@@ -25,10 +27,26 @@ function filterByStatus<T extends { status: string }>(items: T[], statuses: stri
 function buildSearchDocuments(
   issues: RawIssue[],
   milestones: RawMilestone[],
+  projectData: ProjectData | null,
   entityFilter: string,
   fieldFilter: SearchableField[],
 ): SearchDocument[] {
   const docs: SearchDocument[] = [];
+
+  if (entityFilter === "all" || entityFilter === "project") {
+    if (projectData) {
+      const fields = buildFieldsForProject(projectData, fieldFilter);
+      if (fields.length > 0) {
+        docs.push({
+          id: "project",
+          entity: "project",
+          title: projectData.title,
+          status: projectData.health ?? "",
+          fields,
+        });
+      }
+    }
+  }
 
   if (entityFilter === "all" || entityFilter === "issues") {
     for (const issue of issues) {
@@ -105,6 +123,26 @@ function buildFieldsForMilestone(ms: RawMilestone, fieldFilter: SearchableField[
   return fields;
 }
 
+function buildFieldsForProject(project: ProjectData, fieldFilter: SearchableField[]) {
+  const fields: { name: SearchableField; text: string }[] = [];
+
+  if (fieldFilter.includes("title") && project.title) {
+    let titleText = project.title;
+    if (project.description) titleText += " " + project.description;
+    if (project.instructions) titleText += " " + project.instructions;
+    fields.push({ name: "title", text: titleText });
+  }
+  if (fieldFilter.includes("content") && project.content) {
+    fields.push({ name: "content", text: project.content });
+  }
+  if (fieldFilter.includes("log") && project.log && project.log.length > 0) {
+    const logText = project.log.map((entry) => entry.body).join(" ");
+    fields.push({ name: "log", text: logText });
+  }
+
+  return fields;
+}
+
 function formatResultsForTable(results: SearchResult[]): Record<string, unknown>[] {
   return results.map((r) => ({
     entity: r.entity,
@@ -119,9 +157,9 @@ function formatResultsForTable(results: SearchResult[]): Record<string, unknown>
 export function registerSearchCommand(program: Command): void {
   program
     .command("search")
-    .description("Search issues and milestones by text content")
+    .description("Search project, issues, and milestones by text content")
     .requiredOption("--query <text>", "Search query text")
-    .option("--entity <type>", "Entity type: issues, milestones, all", "all")
+    .option("--entity <type>", "Entity type: issues, milestones, project, all", "all")
     .option("--fields <fields>", "Comma-separated fields to search: title, content, log, checklist")
     .option("-s, --status <statuses>", "Pre-filter by comma-separated statuses")
     .option("--limit <n>", "Maximum number of results", "20")
@@ -174,6 +212,16 @@ export function registerSearchCommand(program: Command): void {
         // Read entities
         let issues: RawIssue[] = [];
         let milestones: RawMilestone[] = [];
+        let projectData: ProjectData | null = null;
+
+        if (entityFilter === "all" || entityFilter === "project") {
+          try {
+            projectData = await readProjectMd(projectPath);
+            verboseLog("Loaded project data");
+          } catch {
+            verboseLog("No project.md found, skipping project search");
+          }
+        }
 
         if (entityFilter === "all" || entityFilter === "issues") {
           issues = await readAllIssues(projectPath, config);
@@ -192,7 +240,7 @@ export function registerSearchCommand(program: Command): void {
         }
 
         // Build search corpus and run search
-        const documents = buildSearchDocuments(issues, milestones, entityFilter, fieldFilter);
+        const documents = buildSearchDocuments(issues, milestones, projectData, entityFilter, fieldFilter);
         verboseLog(`Built ${documents.length} search documents`);
 
         const results = search(documents, query, limit);

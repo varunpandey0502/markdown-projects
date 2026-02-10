@@ -82,6 +82,29 @@ export interface Milestone extends MilestoneFrontmatter, MilestoneComputedFields
   content?: string;
 }
 
+// ── Project ──
+
+export type ProjectHealth = "on-track" | "at-risk" | "off-track";
+
+export interface ProjectLogEntry extends LogEntry {
+  health?: ProjectHealth;
+}
+
+export interface ProjectFrontmatter {
+  title: string;
+  description?: string;
+  instructions?: string;
+  health?: ProjectHealth;
+  log: ProjectLogEntry[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ProjectData extends ProjectFrontmatter {
+  filePath: string;
+  content?: string;
+}
+
 // ── Configuration ──
 
 export type IssueStatusCategory = "triage" | "backlog" | "unstarted" | "started" | "completed" | "canceled";
@@ -129,13 +152,6 @@ export interface MilestoneConfig {
 export interface PresetConfig {
   issues: IssueConfig;
   milestones: MilestoneConfig;
-}
-
-// ProjectConfig = full config (PresetConfig + project metadata, written to project.json)
-export interface ProjectConfig extends PresetConfig {
-  name: string;
-  description?: string;
-  instructions?: string;
 }
 
 // ── Settings Hierarchy ──

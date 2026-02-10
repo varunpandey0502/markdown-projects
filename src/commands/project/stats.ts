@@ -1,6 +1,7 @@
 import type { Command } from "commander";
 import { MdpError } from "../../errors.ts";
 import { readConfig, flattenStatuses, getDoneStatuses } from "../../lib/config.ts";
+import { readProjectMd } from "../../lib/settings.ts";
 import { resolveProjectPath } from "../../lib/project-finder.ts";
 import { getGlobalOptions } from "../../lib/command-utils.ts";
 import { readAllIssues } from "../../lib/issue-reader.ts";
@@ -17,6 +18,7 @@ export function registerStatsCommand(program: Command): void {
         const globals = getGlobalOptions(cmd);
         const projectPath = await resolveProjectPath(globals.projectPath);
         const config = await readConfig(projectPath);
+        const projectMd = await readProjectMd(projectPath);
 
         verboseLog(`Computing stats for ${projectPath}`);
 
@@ -91,6 +93,10 @@ export function registerStatsCommand(program: Command): void {
         }
 
         const statsData = {
+          project: {
+            title: projectMd.title,
+            health: projectMd.health ?? null,
+          },
           issues: {
             total: allIssues.length,
             byStatus,
@@ -113,6 +119,7 @@ export function registerStatsCommand(program: Command): void {
           const toRows = (obj: Record<string, number>) =>
             Object.entries(obj).map(([name, count]) => ({ name, count }));
 
+          printTable(`Project: ${projectMd.title}${projectMd.health ? `  |  Health: ${projectMd.health}` : ""}`);
           printTable(`Issues: ${allIssues.length}  |  Milestones: ${allMilestones.length}  |  Blocked: ${blockedCount}  |  Overdue: ${overdueCount}`);
           printTable(`Estimate: ${totalEstimate}  |  Spent: ${totalSpent}`);
           printTable(`\nBy Status:`);

@@ -3,14 +3,14 @@ import { PROJECT_DIR } from "../constants.ts";
 import { readConfig } from "./config.ts";
 import { listDir, readText, isDirectory } from "./fs-utils.ts";
 import { parseMarkdown, getString, getStringArray, getChecklist, getLogEntries } from "./frontmatter.ts";
-import type { MilestoneFrontmatter, ProjectConfig } from "../types.ts";
+import type { MilestoneFrontmatter, PresetConfig } from "../types.ts";
 
 export interface RawMilestone extends MilestoneFrontmatter {
   filePath: string;
   content: string;
 }
 
-export async function readAllMilestones(projectPath: string, config?: ProjectConfig): Promise<RawMilestone[]> {
+export async function readAllMilestones(projectPath: string, config?: PresetConfig): Promise<RawMilestone[]> {
   if (!config) {
     config = await readConfig(projectPath);
   }
@@ -55,7 +55,7 @@ export async function readAllMilestones(projectPath: string, config?: ProjectCon
   return milestones;
 }
 
-export async function findMilestoneById(projectPath: string, milestoneId: string, config?: ProjectConfig): Promise<RawMilestone | null> {
+export async function findMilestoneById(projectPath: string, milestoneId: string, config?: PresetConfig): Promise<RawMilestone | null> {
   const milestones = await readAllMilestones(projectPath, config);
   return milestones.find((m) => m.id.toLowerCase() === milestoneId.toLowerCase()) ?? null;
 }

@@ -8,11 +8,13 @@ import { getDefaultFormat } from "./lib/settings.ts";
 
 // ── Command registrations ──
 import { registerProjectCreateCommand } from "./commands/project/init.ts";
+import { registerProjectGetCommand } from "./commands/project/get.ts";
 import { registerSettingsCommand } from "./commands/project/settings.ts";
 import { registerProjectListCommand } from "./commands/project/list.ts";
 import { registerProjectAddCommand } from "./commands/project/add.ts";
 import { registerProjectRemoveCommand } from "./commands/project/remove.ts";
 import { registerProjectTagCommand } from "./commands/project/tag.ts";
+import { registerProjectLogCommand } from "./commands/project/log.ts";
 import { registerTagListCommand } from "./commands/tag/list.ts";
 import { registerTagAddCommand } from "./commands/tag/add.ts";
 import { registerTagUpdateCommand } from "./commands/tag/update.ts";
@@ -65,6 +67,7 @@ const projectCmd = program
   .description("Manage projects");
 
 registerProjectCreateCommand(projectCmd);
+registerProjectGetCommand(projectCmd);
 registerProjectAddCommand(projectCmd);
 registerProjectListCommand(projectCmd);
 registerProjectRemoveCommand(projectCmd);
@@ -72,6 +75,7 @@ registerProjectTagCommand(projectCmd);
 registerSettingsCommand(projectCmd);
 registerStatsCommand(projectCmd);
 registerFixCommand(projectCmd);
+registerProjectLogCommand(projectCmd);
 
 // ── Tag subcommand group ──
 const tagCmd = program

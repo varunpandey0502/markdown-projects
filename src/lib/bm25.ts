@@ -14,7 +14,7 @@ export interface SearchField {
 
 export interface SearchDocument {
   id: string;
-  entity: "issue" | "milestone";
+  entity: "issue" | "milestone" | "project";
   title: string;
   status: string;
   fields: SearchField[];
@@ -26,7 +26,7 @@ export interface FieldMatch {
 }
 
 export interface SearchResult {
-  entity: "issue" | "milestone";
+  entity: "issue" | "milestone" | "project";
   id: string;
   title: string;
   status: string;

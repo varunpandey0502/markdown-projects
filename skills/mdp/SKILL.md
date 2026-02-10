@@ -5,7 +5,7 @@ license: MIT
 compatibility: Requires mdp installed via `bun install -g github:varunpandey0502/markdown-projects`.
 metadata:
   author: varunpandey0502
-  version: "1.2"
+  version: "1.3"
 allowed-tools: Bash(mdp:*)
 ---
 
@@ -15,7 +15,7 @@ A file-based project management CLI. Projects live in `.mdp/` directories contai
 
 ## IMPORTANT: On first use
 
-When you start working with an existing project, **immediately read `.mdp/project.json`** to learn the project's valid statuses, types, labels, and priorities. Do not guess or assume defaults — the config is the source of truth. Statuses are grouped by category (e.g., `completed`, `started`), and only the `name` field within each status is used in commands.
+When you start working with an existing project, **immediately read `.mdp/settings.json`** to learn the project's valid statuses, types, labels, and priorities, and **read `.mdp/project.md`** for project identity, health, and instructions. Do not guess or assume defaults — the config is the source of truth. Statuses are grouped by category (e.g., `completed`, `started`), and only the `name` field within each status is used in commands.
 
 ## Installation
 
@@ -38,7 +38,8 @@ mdp issue update -p . --id ISS-1 -s "In Progress"
 
 ```
 .mdp/
-├── project.json           # Project config (committed)
+├── settings.json          # Schema config: statuses, priorities, labels, types (committed)
+├── project.md             # Project identity: title, description, instructions, health, log (committed)
 ├── issues/                # Flat directory of issue folders
 │   └── ISS-1-add-auth/
 │       └── ISS-1-add-auth.md
@@ -51,13 +52,10 @@ mdp issue update -p . --id ISS-1 -s "In Progress"
 
 ## Configuration
 
-Project config is stored in `.mdp/project.json` with project metadata and entity-scoped objects:
+Schema config is stored in `.mdp/settings.json` with entity-scoped objects:
 
 ```json
 {
-  "name": "my-project",
-  "description": "Optional one-line project description",
-  "instructions": "Optional free-text guidance for LLMs and collaborators",
   "issues": {
     "prefix": "ISS",
     "statuses": {
@@ -77,15 +75,29 @@ Project config is stored in `.mdp/project.json` with project metadata and entity
 }
 ```
 
+Project identity is stored in `.mdp/project.md` with YAML frontmatter:
+
+```yaml
+---
+title: My Project
+description: Optional one-line project description
+instructions: Optional free-text guidance for LLMs and collaborators
+health: on-track
+log: []
+createdAt: 2025-01-01T00:00:00.000Z
+updatedAt: 2025-01-01T00:00:00.000Z
+---
+```
+
 Statuses are grouped by **status category** (lifecycle stage). Each category maps to an array of `{ name, description }` status objects. The system uses categories (not status names) to determine completion, overdue detection, etc.
 
 Issues and milestones have independent statuses, priorities, and labels.
 
-At runtime, `.mdp/project.json` is the sole source of truth — no merge layers.
+At runtime, `.mdp/settings.json` is the sole source of truth for schema config — no merge layers.
 
-At project creation: preset (built-in or custom from `~/.mdp/config.json`) → CLI flag overrides → written to `project.json`.
+At project creation: preset (built-in or custom from `~/.mdp/settings.json`) → CLI flag overrides → written to `settings.json`.
 
-Custom presets and default preferences (default preset, output format) are stored in `~/.mdp/config.json`.
+Custom presets and default preferences (default preset, output format) are stored in `~/.mdp/settings.json`.
 
 ## Global options
 
@@ -97,14 +109,25 @@ All output is JSON: `{ "ok": true, "data": {...} }` or `{ "ok": false, "error": 
 
 ### Project management
 
-- `mdp project create -p <path> [--preset <name>] [-F|--force] [--with-templates] [--no-with-templates] [--issue-prefix <prefix>] [--milestone-prefix <prefix>] [--tags <tags>] [--name <name>] [--description <desc>] [--instructions <text>]` — Create a new project (presets: software, marketing, design, product, social-media, generic)
-- `mdp project settings -p <path>` — Show project settings
+- `mdp project create -p <path> [--preset <name>] [-F|--force] [--with-templates] [--no-with-templates] [--issue-prefix <prefix>] [--milestone-prefix <prefix>] [--tags <tags>] [--title <title>] [--description <desc>] [--instructions <text>]` — Create a new project (presets: software, marketing, design, product, social-media, generic)
+- `mdp project get -p <path> [--no-include-content]` — Get project identity, health, log, and body
+- `mdp project settings -p <path>` — Show project schema settings
 - `mdp project stats -p <path>` — Project statistics
 - `mdp project fix -p <path> [--dry-run]` — Fix folder structure to match frontmatter
 
+### Project log
+
+Manage log entries on the project (stored in `.mdp/project.md`):
+
+- `mdp project log add -p <path> -b "message" [--author <name>] [--health on-track|at-risk|off-track] [--dry-run]`
+- `mdp project log list -p <path>`
+- `mdp project log get -p <path> --index <n>`
+- `mdp project log update -p <path> --index <n> [-b <body>] [--author <name>] [--health <health>] [--dry-run]`
+- `mdp project log delete -p <path> --index <n> [--dry-run]`
+
 ### Project registry
 
-Manage projects in `~/.mdp/config.json`:
+Manage projects in `~/.mdp/settings.json`:
 
 - `mdp project list [--tag <tag>]` — List registered projects (includes `tagDescriptions` in output)
 - `mdp project add <path> [--tags <tags>]`
@@ -372,7 +395,7 @@ mdp milestone log delete -p <path> --id <id> --index <n> [--dry-run]
 mdp search -p <path> -q "query text" [--limit <n>]
 ```
 
-Searches issues and milestones by text content using BF25 ranking. Returns matched fields with snippets.
+Searches project, issues, and milestones by text content using BM25 ranking. Returns matched fields with snippets. Use `--entity project` to search only the project file.
 
 ## Workflow recommendations
 

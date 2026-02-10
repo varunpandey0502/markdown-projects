@@ -2,12 +2,12 @@ import type { Milestone, MilestoneComputedFields, ChecklistItem } from "../types
 import type { RawMilestone } from "./milestone-reader.ts";
 import type { RawIssue } from "./issue-reader.ts";
 import { getDoneStatuses } from "./config.ts";
-import type { ProjectConfig } from "../types.ts";
+import type { PresetConfig } from "../types.ts";
 
 export function computeMilestoneProgress(
   milestone: RawMilestone,
   allIssues: RawIssue[],
-  config: ProjectConfig,
+  config: PresetConfig,
 ): MilestoneComputedFields {
   const assignedIssues = allIssues.filter(
     (i) => i.milestone?.toLowerCase() === milestone.id.toLowerCase(),
@@ -62,7 +62,7 @@ export function computeMilestoneProgress(
 export function enrichMilestone(
   raw: RawMilestone,
   allIssues: RawIssue[],
-  config: ProjectConfig,
+  config: PresetConfig,
   includeContent: boolean = false,
 ): Milestone {
   const computed = computeMilestoneProgress(raw, allIssues, config);

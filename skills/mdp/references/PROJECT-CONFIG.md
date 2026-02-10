@@ -1,14 +1,14 @@
 # Project Configuration
 
-Project configuration lives in `.mdp/project.json`. This file is the sole source of truth at runtime -- no merging, no fallbacks.
+Project configuration is split into two files:
 
-## Fields
+- **`.mdp/settings.json`** — Schema config (statuses, priorities, labels, types). Sole source of truth for validation at runtime.
+- **`.mdp/project.md`** — Project identity (title, description, instructions, health, log) with frontmatter + body content.
+
+## settings.json Fields
 
 | Field | Description |
 |-------|-------------|
-| `name` | Project name (required). Defaults to directory name at creation. |
-| `description` | Optional one-line project description. |
-| `instructions` | Optional free-text guidance for LLMs and collaborators. |
 | `issues.prefix` | ID prefix for issues (e.g., `"ISS"` produces `ISS-1`, `ISS-2`, ...) |
 | `issues.statuses` | Status categories mapped to arrays of `{ name, description }` statuses. |
 | `issues.priorities` | Ordered list of `{ name, description }` priorities. |
@@ -18,6 +18,18 @@ Project configuration lives in `.mdp/project.json`. This file is the sole source
 | `milestones.statuses` | Same structure as issue statuses with milestone-specific categories. |
 | `milestones.priorities` | Same structure as issue priorities. |
 | `milestones.labels` | Available labels for milestones. |
+
+## project.md Fields
+
+| Field | Description |
+|-------|-------------|
+| `title` | Project title (required). Defaults to directory name at creation. |
+| `description` | Optional one-line project description. |
+| `instructions` | Optional free-text guidance for LLMs and collaborators. |
+| `health` | Project health: `on-track`, `at-risk`, `off-track`, or `null`. |
+| `log` | Array of log entries with `timestamp`, `author`, `body`, and optional `health`. |
+| `createdAt` | ISO timestamp of project creation. |
+| `updatedAt` | ISO timestamp of last modification. |
 
 ## Status Categories
 
@@ -76,11 +88,10 @@ mdp issue create -t "Login bug" --template bug-report --priority High
 
 Template resolution: look for `{name}.md` in `.mdp/templates/`, parse frontmatter and body, merge with CLI flags (flags take precedence).
 
-## Example project.json
+## Example settings.json
 
 ```json
 {
-  "name": "my-project",
   "issues": {
     "prefix": "ISS",
     "statuses": {

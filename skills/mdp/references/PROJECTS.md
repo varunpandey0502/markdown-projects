@@ -17,13 +17,22 @@ Create a new markdown project and register it.
 | `--issue-prefix <prefix>` | | `"ISS"` | Prefix for issue IDs |
 | `--milestone-prefix <prefix>` | | `"M"` | Prefix for milestone IDs |
 | `--tags <tags>` | | | Comma-separated tags for grouping |
-| `--name <name>` | | directory name | Project name |
+| `--title <title>` | | directory name | Project title |
+| `--name <name>` | | | Alias for `--title` |
 | `--description <desc>` | | | One-line project description |
 | `--instructions <text>` | | | Free-text guidance for LLMs and collaborators |
 
 Available presets: `software`, `marketing`, `design`, `product`, `social-media`, `generic`.
 
-Creates `.mdp/` with `project.json`, `issues/`, `milestones/`, `docs/`, `templates/`. Registers the project in `~/.mdp/config.json`.
+Creates `.mdp/` with `settings.json` (schema config), `project.md` (project identity), `issues/`, `milestones/`, `docs/`, `templates/`. Registers the project in `~/.mdp/settings.json`.
+
+## Get Project
+
+```bash
+mdp project get -p <path> [--no-include-content]
+```
+
+Get project identity, health, log, and body content from `.mdp/project.md`.
 
 ## Add Project
 
@@ -64,7 +73,7 @@ Add or remove tags from a registered project. Tags added via `--add` are auto-cr
 mdp project settings -p <path>
 ```
 
-Display the project configuration from `.mdp/project.json`.
+Display the project schema configuration from `.mdp/settings.json`.
 
 ## Show Stats
 
@@ -72,7 +81,21 @@ Display the project configuration from `.mdp/project.json`.
 mdp project stats -p <path>
 ```
 
-Show project statistics: issue counts by status, priority, type, label, and assignee; estimate/spent totals; blocked and overdue counts; milestone counts by status.
+Show project statistics: project title and health, issue counts by status, priority, type, label, and assignee; estimate/spent totals; blocked and overdue counts; milestone counts by status.
+
+## Project Log
+
+Manage log entries on the project. Supports optional health tracking (`on-track`, `at-risk`, `off-track`).
+
+```bash
+mdp project log add -p <path> -b "message" [--author <name>] [--health on-track|at-risk|off-track] [--dry-run]
+mdp project log list -p <path>
+mdp project log get -p <path> --index <n>
+mdp project log update -p <path> --index <n> [-b <body>] [--author <name>] [--health <health>] [--dry-run]
+mdp project log delete -p <path> --index <n> [--dry-run]
+```
+
+When `--health` is provided on `add` or `update`, the health value is stored both in the log entry AND propagated to the top-level `health` field in `project.md` frontmatter.
 
 ## Fix Project
 

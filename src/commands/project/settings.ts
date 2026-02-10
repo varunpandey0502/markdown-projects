@@ -18,7 +18,7 @@ export function registerSettingsCommand(program: Command): void {
 
         printSuccess({
           projectPath,
-          projectFile: getProjectFilePath(projectPath),
+          settingsFile: getProjectFilePath(projectPath),
           config,
         });
       } catch (err) {

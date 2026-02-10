@@ -1,6 +1,6 @@
 # Global Configuration
 
-Global configuration lives at `~/.mdp/config.json`. Stores the project registry, custom presets, and default preferences.
+Global configuration lives at `~/.mdp/settings.json`. Stores the project registry, custom presets, and default preferences.
 
 ## Project Registry
 
@@ -35,7 +35,7 @@ Tag descriptions are included in `mdp project list` output via the `tagDescripti
 
 ## Presets
 
-A preset is a one-time configuration template used at project creation. After creation, the preset has no further effect -- `project.json` is self-contained.
+A preset is a one-time configuration template used at project creation. After creation, the preset has no further effect -- `settings.json` is self-contained.
 
 ### Built-in Presets
 
@@ -52,7 +52,7 @@ All presets share the same statuses and priorities.
 
 ### Custom Presets
 
-Define custom presets in `~/.mdp/config.json` under the `presets` key. Each preset must contain the full `issues` and `milestones` objects (same schema as `project.json`).
+Define custom presets in `~/.mdp/settings.json` under the `presets` key. Each preset must contain the full `issues` and `milestones` objects (same schema as `settings.json`).
 
 ```bash
 mdp project create -p . --preset my-team
@@ -67,7 +67,7 @@ If a custom preset has the same name as a built-in preset, the custom one takes 
 | `defaults.preset` | `"software"` | Default preset when `--preset` is not specified |
 | `defaults.format` | `"json"` | Default output format when `-f` is not specified |
 
-## Example config.json
+## Example settings.json
 
 ```json
 {

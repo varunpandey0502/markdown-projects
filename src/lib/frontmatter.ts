@@ -99,3 +99,25 @@ export function getLogEntries(obj: Record<string, unknown>, key: string): RawLog
       body: String(item.body ?? ""),
     }));
 }
+
+export interface RawProjectLogEntry extends RawLogEntry {
+  health?: string;
+}
+
+export function getProjectLogEntries(obj: Record<string, unknown>, key: string): RawProjectLogEntry[] {
+  const val = obj[key];
+  if (!Array.isArray(val)) return [];
+  return val
+    .filter((item): item is Record<string, unknown> => item !== null && typeof item === "object")
+    .map((item) => {
+      const entry: RawProjectLogEntry = {
+        timestamp: String(item.timestamp ?? ""),
+        author: String(item.author ?? ""),
+        body: String(item.body ?? ""),
+      };
+      if (typeof item.health === "string") {
+        entry.health = item.health;
+      }
+      return entry;
+    });
+}

@@ -18,11 +18,13 @@ export async function addLogEntry(
   author: string,
   body: string,
   dryRun: boolean,
+  extraFields?: Record<string, unknown>,
+  extraFmUpdates?: Record<string, unknown>,
 ): Promise<{ entry: LogEntry; totalEntries: number }> {
   if (!body) throw missingRequired("body");
 
   const now = new Date().toISOString();
-  const newEntry: LogEntry = { timestamp: now, author, body };
+  const newEntry: LogEntry = { timestamp: now, author, body, ...extraFields };
 
   const rawContent = await readText(ctx.absolutePath);
   const parsed = parseMarkdown(rawContent);
@@ -31,6 +33,7 @@ export async function addLogEntry(
   const currentLog = [...readLog(fm), newEntry];
   fm.log = currentLog;
   fm.updatedAt = now;
+  if (extraFmUpdates) Object.assign(fm, extraFmUpdates);
 
   if (!dryRun) {
     const markdown = buildMarkdown(fm, parsed.content);
@@ -69,6 +72,8 @@ export async function updateLogEntry(
   index: number,
   updates: { author?: string; body?: string },
   dryRun: boolean,
+  extraFields?: Record<string, unknown>,
+  extraFmUpdates?: Record<string, unknown>,
 ): Promise<{ index: number; entry: LogEntry; changes: string[] }> {
   const rawContent = await readText(ctx.absolutePath);
   const parsed = parseMarkdown(rawContent);
@@ -90,12 +95,19 @@ export async function updateLogEntry(
     changes.push("body");
     entry.body = updates.body;
   }
+  if (extraFields) {
+    for (const [key, value] of Object.entries(extraFields)) {
+      changes.push(key);
+      (entry as Record<string, unknown>)[key] = value;
+    }
+  }
 
   entries[index] = entry;
 
   const now = new Date().toISOString();
   fm.log = entries;
   fm.updatedAt = now;
+  if (extraFmUpdates) Object.assign(fm, extraFmUpdates);
 
   if (!dryRun) {
     const markdown = buildMarkdown(fm, parsed.content);
