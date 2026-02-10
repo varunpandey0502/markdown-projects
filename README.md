@@ -51,7 +51,8 @@ mdp milestone progress -p . --id M-1
 
 ```
 .mdp/
-├── project.json           # Project configuration
+├── settings.json          # Schema configuration (statuses, priorities, labels, types)
+├── project.md             # Project identity (title, description, health, logs)
 ├── issues/                # Flat directory of issue folders
 │   ├── ISS-1-add-auth/
 │   │   └── ISS-1-add-auth.md
@@ -71,13 +72,19 @@ mdp milestone progress -p . --id M-1
 | Command | Description |
 |---------|-------------|
 | `mdp project create` | Create a new project |
+| `mdp project get` | Get project identity (title, description, health) |
 | `mdp project add` | Register an existing project |
 | `mdp project list` | List registered projects |
 | `mdp project remove` | Unregister a project |
 | `mdp project tag` | Add/remove tags from a project |
-| `mdp project settings` | Show project configuration |
+| `mdp project settings` | Show schema configuration |
 | `mdp project stats` | Show project statistics |
 | `mdp project fix` | Fix folder structure to match frontmatter |
+| `mdp project log add` | Add a log entry to the project |
+| `mdp project log list` | List project log entries |
+| `mdp project log get` | Get a specific log entry by index |
+| `mdp project log update` | Update a log entry by index |
+| `mdp project log delete` | Delete a log entry by index |
 
 ### Issues
 
@@ -116,7 +123,7 @@ mdp milestone progress -p . --id M-1
 
 | Command | Description |
 |---------|-------------|
-| `mdp search` | Search issues and milestones by text content |
+| `mdp search` | Search project, issues, and milestones by text content |
 
 ### Global Flags
 
